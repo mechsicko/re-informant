@@ -1,0 +1,17 @@
+{
+  "name": "re-informant-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "re:informant for your site: the game, wallet sign-in, re:gen holdings (wallet + staked) and the shared roster.",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "viem": "^2.21.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

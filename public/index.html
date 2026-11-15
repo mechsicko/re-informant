@@ -1,0 +1,2381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>re:informant · re:generates</title>
+<meta name="theme-color" content="#0D1814">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=Martian+Mono:wght@500;600&family=Pixelify+Sans:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sage:#639685; --sage-deep:#557F71; --sage-mist:#9CC4B4;
+  --ink:#0D1814; --ink-2:#15251E; --ink-3:#21362C; --paper:#F1F5EE;
+  --gold:#FFC531; --ember:#FF8A3D; --red:#ff4d4d;
+  --display:"Pixelify Sans",ui-monospace,monospace;
+  --text:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Martian Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--text);font-size:15px;line-height:1.45}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input{font:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:0 12px 88px}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.muted{color:var(--sage-mist)}
+.re{text-transform:none}
+.gold{color:var(--gold)}
+
+/* header */
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px;padding:14px 2px 10px}
+.word{font-family:var(--display);font-weight:700;font-size:30px;line-height:.86;letter-spacing:-.01em;margin:0}
+.word span{color:var(--sage-mist)}
+.kicker{margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:3px;background:var(--ink-2);white-space:nowrap}
+.chip i{width:7px;height:7px;border-radius:50%;background:var(--ember);box-shadow:0 0 8px var(--ember);animation:pulse 1.6s infinite}
+.chip.off i{background:var(--sage-mist);box-shadow:none;animation:none}
+@keyframes pulse{50%{opacity:.35}}
+
+/* tabs */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink-2);border-top:1px solid var(--ink-3);
+  padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+nav.tabs div{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{padding:13px 0 12px;color:var(--sage-mist);border-top:2px solid transparent}
+nav.tabs button[aria-selected="true"]{color:var(--paper);border-top-color:var(--gold)}
+section[hidden]{display:none}
+
+/* stage */
+.stage{position:relative;background:#000;border-radius:4px;overflow:hidden;box-shadow:0 0 0 1px var(--ink-3)}
+.stage canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
+.call{min-height:44px;padding:10px 2px 4px;font-size:15px}
+.call b{font-family:var(--display);font-weight:600}
+.ctrl{display:flex;gap:6px;align-items:center;margin:6px 0 14px}
+.ctrl button{background:var(--ink-2);padding:9px 12px;border-radius:3px;min-width:44px}
+.ctrl button:active{background:var(--ink-3)}
+.ctrl .grow{flex:1}
+.ctrl button.on{background:var(--ink-3);color:var(--gold)}
+
+/* lists */
+.h2{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 8px}
+.h2 h2{font-family:var(--display);font-weight:600;font-size:20px;margin:0}
+.seg{display:flex;gap:4px;margin:0 0 8px;flex-wrap:wrap}
+.seg button{padding:6px 10px;border-radius:3px;background:var(--ink-2);color:var(--sage-mist)}
+.seg button.on{background:var(--paper);color:var(--ink)}
+.bout{display:grid;grid-template-columns:36px 1fr auto 1fr 36px;align-items:center;gap:8px;padding:8px;border-radius:4px;background:var(--ink-2);margin-bottom:6px;width:100%;text-align:left}
+.bout.now{box-shadow:inset 0 0 0 1px var(--gold)}
+.bout.mine{background:var(--ink-3)}
+.bout .r{text-align:right}
+.bout .vs{font-family:var(--mono);font-size:10px;color:var(--sage-mist);text-align:center;min-width:44px}
+.nm{font-family:var(--display);font-weight:600;font-size:15px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{font-family:var(--mono);font-size:10px;color:var(--sage-mist);letter-spacing:.04em;text-transform:uppercase}
+.w{color:var(--gold)}
+img.px{image-rendering:pixelated;image-rendering:crisp-edges;display:block;background:var(--sage);border-radius:2px}
+
+/* board */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 12px}
+.stat{background:var(--ink-2);border-radius:4px;padding:10px}
+.stat b{display:block;font-family:var(--display);font-size:22px;font-weight:600;line-height:1.1}
+.row{display:grid;grid-template-columns:30px 36px 1fr auto;align-items:center;gap:10px;padding:7px 8px;border-radius:4px;width:100%;text-align:left}
+.row:nth-child(odd){background:var(--ink-2)}
+.row.mine{box-shadow:inset 3px 0 0 var(--sage-mist)}
+.row .rk{font-family:var(--mono);font-size:12px;color:var(--sage-mist);text-align:right}
+.row .px{font-family:var(--mono);font-size:13px;text-align:right}
+.booth{display:flex;align-items:center;gap:8px;margin:8px 0;color:var(--gold)}
+.booth::before,.booth::after{content:"";flex:1;height:1px;background:var(--gold);opacity:.5}
+.tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;padding:2px 5px;border-radius:2px;background:var(--ink-3);color:var(--sage-mist);vertical-align:2px}
+.tag.ember{color:var(--ember)}
+.tag.gold{color:var(--ink);background:var(--gold)}
+.search{width:100%;padding:11px 12px;border-radius:4px;border:1px solid var(--ink-3);background:var(--ink-2);color:var(--paper);margin-bottom:8px}
+
+/* enter */
+.card{background:var(--ink-2);border-radius:6px;padding:12px;margin-bottom:10px}
+.mine-card{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center}
+.btn{background:var(--gold);color:var(--ink);font-weight:600;padding:12px 16px;border-radius:4px}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.ghost{background:var(--ink-3);color:var(--paper)}
+.btn.small{padding:8px 11px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.grid button{padding:0;border-radius:3px;outline:2px solid transparent;outline-offset:1px}
+.grid button.on{outline-color:var(--gold)}
+.grid img{width:100%;height:auto}
+.pick{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:start;margin:12px 0}
+.note{background:var(--ink-3);border-radius:4px;padding:10px 12px;font-size:14px;margin:10px 0}
+label.field{display:block;margin:10px 0}
+label.field input{width:100%;margin-top:6px;padding:11px 12px;border-radius:4px;border:1px solid var(--ink-3);background:var(--ink);color:var(--paper);font-family:var(--display);font-size:18px;text-transform:uppercase}
+
+/* lore */
+.lore p{margin:0 0 12px}
+.lore h3{font-family:var(--display);font-weight:600;font-size:18px;margin:22px 0 8px}
+.lore .noir{background:var(--ink-2);border-left:3px solid var(--gold);padding:14px 16px;border-radius:0 4px 4px 0;font-size:16px}
+.tri{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center}
+.tri div{background:var(--ink-2);border-radius:4px;padding:10px 6px}
+.tri b{display:block;font-family:var(--display);font-size:16px}
+table.sp{width:100%;border-collapse:collapse;font-size:14px}
+table.sp td{padding:7px 6px;border-bottom:1px solid var(--ink-3);vertical-align:top}
+table.sp td:first-child{white-space:nowrap}
+
+/* profile sheet */
+.sheet{position:fixed;inset:0;z-index:40;background:rgba(13,24,20,.72);display:flex;align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.sheet .in{background:var(--ink);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:10px 10px 0 0;
+  padding:16px 14px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -1px 0 var(--ink-3)}
+.sheet .top{display:grid;grid-template-columns:118px 1fr auto;gap:14px;align-items:center}
+.bar{height:6px;background:var(--ink-3);border-radius:3px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--sage-mist)}
+.kv{display:grid;grid-template-columns:62px 1fr 40px;gap:8px;align-items:center;margin:5px 0}
+.gear{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px}
+.gear div{background:var(--ink-2);border-radius:3px;padding:6px 2px;text-align:center;font-family:var(--mono);font-size:8px;line-height:1.3;color:#5a7369}
+.gear div.on{background:var(--ink-3);color:var(--gold)}
+.hist{display:grid;grid-template-columns:44px 1fr auto auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--ink-2)}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--paper);color:var(--ink);padding:10px 14px;border-radius:4px;z-index:60;font-weight:600;max-width:90vw}
+.toast[hidden]{display:none}
+@media (min-width:900px){ .wrap{max-width:620px} }
+img.px.card-img{width:100%;height:auto;background:none;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+.red{color:var(--red)}
+.log{max-height:168px;overflow:auto;border-top:1px solid var(--ink-3);padding:6px 0;margin:2px 0 4px;font-size:14px;scroll-behavior:smooth}
+.log .line{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;padding:4px 2px}
+.log .line img{border-radius:2px}
+.log .line.sys{color:var(--sage-mist)}
+.log .line.tip{color:#d9c48a}
+.log .line.big{color:var(--paper);font-weight:600}
+.log .dot{display:block;width:22px;height:22px;border-radius:2px;background:var(--ink-3)}
+.table{display:block;width:100%;text-align:left;background:var(--ink-2);border-radius:4px;padding:8px;margin-bottom:6px}
+.table.now{box-shadow:inset 0 0 0 1px var(--gold)}
+.table.mine{background:var(--ink-3)}
+.table .tt{display:flex;justify-content:space-between;margin-bottom:6px}
+.faces{display:flex;gap:4px;flex-wrap:wrap}
+.face{position:relative;display:block}
+.face.rat::after{content:"RAT";position:absolute;left:0;right:0;bottom:-2px;text-align:center;font-family:var(--mono);font-size:7px;color:#fff;background:var(--red)}
+.sel{width:100%;margin-top:6px;padding:11px 10px;border-radius:4px;border:1px solid var(--ink-3);background:var(--ink);color:var(--paper);font-family:var(--text);font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 class="word"><span>re:</span>informant</h1>
+      <div class="kicker mono muted">Who's the rat at DeStefano's?</div>
+    </div>
+    <div class="chip mono" id="chip"><i></i><span id="chipText">re:loading</span></div>
+  </header>
+
+  <section id="tab-watch">
+    <div class="stage"><canvas id="stage" width="240" height="135" aria-label="The table"></canvas></div>
+    <div class="call" id="call" aria-live="polite"></div>
+    <div class="log" id="log" aria-label="Table talk"></div>
+    <div class="ctrl">
+      <button id="bPrev" aria-label="Previous bout">◀</button>
+      <button id="bPlay" aria-label="Play or pause">❚❚</button>
+      <button id="bNext" aria-label="Next bout">▶</button>
+      <button id="bSkip" class="mono" aria-label="Skip to result">END</button>
+      <span class="grow"></span>
+      <button id="bSpeed" class="mono">1×</button>
+      <button id="bAuto" class="mono on" aria-pressed="true">AUTO</button>
+    </div>
+    <div class="h2"><h2 id="floorTitle">Tonight's tables</h2><span class="mono muted" id="floorSub"></span></div>
+    <div class="seg" id="bellTabs"></div>
+    <div id="bouts"></div>
+    <div id="floorNote" class="sub" style="margin-top:8px"></div>
+  </section>
+
+  <section id="tab-board" hidden>
+    <div class="h2"><h2 id="boardTitle">The board</h2><span class="mono muted" id="boardSub"></span></div>
+    <div class="stats" id="boardStats"></div>
+    <div class="seg" id="boardSeg"><button class="on" data-f="all">ALL</button><button data-f="mine">MINE</button><button data-f="players">PLAYERS</button></div>
+    <input class="search" id="search" placeholder="Look up a fighter or a player" autocomplete="off">
+    <div id="board"></div>
+  </section>
+
+  <section id="tab-enter" hidden>
+    <div id="enter"></div>
+  </section>
+
+  <section id="tab-lore" hidden class="lore"></section>
+</div>
+
+<nav class="tabs"><div role="tablist">
+  <button role="tab" class="mono" data-tab="watch" aria-selected="true">WATCH</button>
+  <button role="tab" class="mono" data-tab="board" aria-selected="false">BOARD</button>
+  <button role="tab" class="mono" data-tab="enter" aria-selected="false">ENTER</button>
+  <button role="tab" class="mono" data-tab="lore" aria-selected="false">LORE</button>
+</div></nav>
+
+<div class="sheet" id="sheet" hidden><div class="in" id="sheetIn"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>/* the 30 re:gens — native 18x18, same data as re:STACK / re:RUN / re:PET */
+const REGENS = [
+  {p:"272727,323232,~84ab9f,303030,71bf00,7fd900,96ff01,ffffff,96ffff,a0bfb5,969696,646464,000101,c8c8c8,8ef2f1,c1d6cf,a1a1a1,707272,574100,644b02,ff0000,~2a2a2a",d:"............................................................011111...........01111111..........01111111...2.....0333333333..2....403131313135.2.....4567888884..9.....a4b87c87c...9.....addb88ee8..f.......addbbbbb..f........gdddhijik........0agdddd..........0l1da0...........0l117711..........0l117771...........l117771......."},
+  {p:"0096ff,00d87f,0071bf,~3c5a51,00bf71,007fd9,000000,4b004b,960096,ffffff,2d443d,ff00ff,~30483f,272727,ffff00,323232,~2a2a2a",d:"..............................................................................0....1...........20033341.........2500666341.......250077766341.......2507897694........a278b9769.........a678bb763..........a6788763...........c677663..........da67633..........ddef6ag..........ddffeffe..........ddffdeef...........dffdfff......."},
+  {p:"b8b800,f5f500,161616,~181818,000000,~f00000,d0d000,~d80000,ff0000,c00000,~ff3c3c,ff2929,ff3d3d,~ff3333,ae8b61,ffffff,836849,a1815a,8c704e,252525,323232",d:"...........................................................................00.011233.45.....0..016112278.4......988a8bac958......09bd8cb8b849.....0.016eefeef.4.......0e6ee4ee4.........ge6eeehhe..........geeeeeee...........ieeehhe...........gieeee............jkff.............jkkkj............jkkjkjk...........jkkjkjk......."},
+  {p:"~121212,181818,4b3317,856f56,8fc3b9,ffd926,000000,c2efa6,645341,392711,~3c2712,~3c2a12,6598bd,81c2f0,ffffff",d:"..............................................................................011111...........01111111.........011111111.........011123433.........011256765.........831256565.........832255555..........92256665...........a265556...........9b2333............c29c.............cdeeed...........cddeeed...........cddeeed......."},
+  {p:"bf3e00,ff5200,191919,d84600,121313,ffddcf,ffffff,~c0a59c,a28d84,~ccb1a5,ffff00,a90000,e10100",d:"...........................................................011111...........01111111..........011111111.........011112221.........033333333......000422556556.........752556556.........755555885..........75555555...........9555885...........795555............a577.............bcacca...........bccbaac...........75bbccc......."},
+  {p:"4b3800,644b00,84ac9f,ae8b61,010101,a0bfb5,836849,a1815a,c2d6cf,8c704e,614e36,574101,ff0000,bfbfbf,ffffff",d:"..............................................................................011111...........01111111...2.....011111111...2.....011133333...2.....011334334...5.....631334334...5.....633333773..8.......63333333..8........9333ab1bc.........693333............d366.............deeeee...........deedeee...........63ddeee......."},
+  {p:"171717,~4b4b4b,~5d5d5d,393939,ffffff,96ffff,969696,~3c3c3c,3dff69,c8c8c8,~515151,05ff08,~06fc0c,5bff9b,15e91d,3bbf50,4faa6a,636363,8ef2f2,a1a1a1,bbbcbb,b05658,eb7375",d:"..............................................................................000000...........00000000.........000000000.........012345555.........067458558.........69a58bcdbeffg.....699h58ii8..........699hhhhh...........j999kk9...........6j9999............l966.............lmmmmm...........lmmlmmm...........69llmmm......."},
+  {p:"bfa69b,ffddcf,bf0101,ff0000,00ff96,00ffff,ffff00,ff9600,bfbf00,a28d84,00c072,01bfbf,cdb2a6,bfbfbf,02356f,034694,ffffff",d:".................................................................................................0111.............011111...........01111111........23345673376.......20145672376........0145879976.........0a511111b..........c111991...........0c1111............d100.............efgggg...........effefff...........01eeffg......."},
+  {p:"272727,323232,~242424,303030,121212,~181818,ffff64,ffffff,a9a900,d4d400,e1e100,b5b500,cdcd50,~2a2a2a,bfbf4b",d:"............................................................011111...........01111111..........01111111.........2333333333........0313131313........455667667.........856664664.........85666699a.........48666666a.........44b66699a.........408c66aa..........0d16e0...........0d117711..........0d117771...........d117771......."},
+  {p:"161515,a91313,e11919,ffdd00,bf1515,e63b3b,836849,~635139,ae8b61,68533b,3a2f21,000000,8c704d,473927,a1815a,26264a,323263,ffffff,ff0000",d:"..............................................................................001222...........00123232.........001232323.........111444442552......067899899.........68a8bc8bc.........68d888ee8..........6ddd8dd8...........cdddeed...........6cdddd............f86f.............fghihg...........fggbibg...........fggbibg......."},
+  {p:"bfbf03,ffff04,000000,4b3800,644b00,ffddcf,bfa69b,c8ffff,a28d84,ceb2a6,252525,323232,ffffff",d:".........0111.............011111...........01111111..........01112112.........011112112........3011111111.......34401121111.......34430112221.......3445600000........654552662.........655575885..........65555555...........9555885...........695555............abcc.............abbba............abbabab...........abbabab......."},
+  {p:"ffffff,272727,323232,6c540d,644b00,~2a2a2a,564000,836849,403387,ae8b61,010000,~9c7e57,~a2815a,4f3b00,~5a4200,~513c00,ffc8c8,8c704e,bfbfbf,e7e7e7",d:"...................................................0........12222.0.0........1222222.0........122222222.........122223342.........155522222......111647889884.........649ab9ab4.........64999cc94.........6d799999e.........dff79gg96............hh99..............79...............i999.............ij00j0............79i000......."},
+  {p:"969696,c8c8c8,8f8f8f,bebebe,2b2b2b,ffc8c8,ad8a60,e6b4b4,856a4a,~8a6f4e,~a2815a,02356f,034694,ffffff",d:"............................................................011111...........01111111..........01111111.........2333333333.......40313151353.......44466755555.......48466675554.......486666675644.......4866666664.........49666aa6...........896666............3688.............bcdddd...........bccbccc...........86bbccd......."},
+  {p:"4b3800,644b00,f20000,d90100,ff0000,bf0000,~ff3939,ff2626,ff3c3c,ff3232,080808,242424,4b8371,1d6464,b8ffe1,59bfb5,~605442,856f56,77b3a9,8bc7bf,6ea595,392611,4b3317,~3c2712,78644e,323232,~2a2a2a,~4e4e48,3f3f3f",d:"..............................................................................011111..2........011111134........54464768524.......579aab4aab5......aaaacdebdefb......aghaiedaedfa.......ghacjkakjfa........lmaaahaaa..........nmhhooh...........lnmhhh............bpll.............bqpppp...........lmrbrrr...........lmmaass......."},
+  {p:"~121212,191919,ffddcf,c2a99e,0e0e0e,ffffff,a28d84,~c9b1a5,~ccb1a5,beffff,02356f,034694",d:"..............................................................................011111...........01111111.........011111111.........011122222.........011222222.........321245245.........322222662..........32222222...........7222662...........382222............9233.............ab9559...........abba99b...........32aabb5......."},
+  {p:"bf3e00,ff5200,b63b01,f34e00,b8b800,fbfb01,d9d2c8,fffefe,424242,585858,020202,ccc6bc,474747,~a2a8a2,333435,~363939,~2a2a2d,~363636,~b1aeab",d:"............................................................011111...........01111111..........01111111.........2333333333........0313131313........455667667.........89566a66a.........896666bb9..........89666669...........c666bb9...........8c6999............59d8.............ee5fg5...........eehe55i...........86fefif......."},
+  {p:"bf9595,ffc7c7,826848,ae8b61,000000,634e37,c9c9c9,707070,ff0c0c,~fc1515,e7b3b3,969696,daaaaa,a10114,d83525,~665139,8c704f,f2bebd",d:"...............................................................................0111.............011111...........01122211.........0112333241........1156666641........1178998841........a12bb66641........ca53333341........0cd53ee341.........0cfg3341...........053411............0121.............0111h1............01h111......."},
+  {p:"~3f3f3f,4b4b4b,3c3c3c,000000,5d5c5d,ac0015,c80019,9a0013,ffc9c9,bf9695,647d00,ffffff,5a7000,~a20015,~4e6003,~b40015,bb2e00,~4e6300,ffff00,e7e7e5",d:"......................00111............0220111...........2..20111............3333333..........211111111.......2211000144111.......567877776.........569abaab6.........56aabaab6.........56aaacca6.........5deaaaaaf.........7ddeagga5............hhaa.............ieai..............jiaai............eajiia............eajbbb......."},
+  {p:"272727,323232,e1e100,644b00,~2a2a2a,~543f00,abab00,5e5ec2,5e5e88,ffff64,535364,000000,~e7e75a,cacb01,f1f15e,~513c00,4b3800,~b4b400,cece50,838383,969695,afafaf",d:"............................................................01111............0111111..........011111111.........011112231.........044411111......0005367898a..........569bc9bd..........56999ee2..........5f699992..........gff69ee2...........gfhi22............00jk0............004lll0...........04119e20...........411lll0......"},
+  {p:"404040,4b4b4b,383838,000000,5d5d5d,a80014,c50010,ae8b61,00ff00,ffff00,ff9600,ff0100,bf7100,836849,01bfbf,bfbf00,a3825b,00ffff,~a20015,960113,~a50015,d83525,8c704e,e7e7e7,~a5845d,ffffff",d:"......................00111............0220111...........2..20111............3333333..........211111111.......2211000144111.......566777775.........5689aba98.........6689c7a98.........5def7gg9h.........5id777775.........jkkd7ll75..........jkmm77j5...........jd7jjj5...........n777jj5..........d7n7o7j5..........d7npppjj....."},
+  {p:"272727,323232,644b32,~181818,~2a2a2a,131313,4f3b27,ffffff,~57422a,ffc8c8,~c00000,~d80000,ff0000,~604830",d:"............................................................01111............0111111..........011111111.........011112231.........044411111......000536272273.........562252253.........562228823.........556222223.........555629925.........55566225..........555ab55...........55accc............5acc2d2...........5accccc......."},
+  {p:"272727,323232,~242424,~181818,~2a2a2a,161616,836849,403387,ae8b61,000000,~9c7e57,a08059,ffcccc,~121212,c99e9e,8c704e,~c39996,bfbfbf,ffffff,~a5845d",d:"............................................................01111............0111111..........011111111.........011112231.........044411111......000536778773.........5389a89a3.........53888bb83.........556888ccc.........d5568becc............ff8gec..........00hi0............0048880...........04118j80...........411iii0......"},
+  {p:"~1b1b1b,232323,~272727,1e1e1e,~d8d8d8,7fd8d8,000000,96ffff,ffffff,~151515,c80000,d33232,a9a9a9,646464,c8c8c8,959595,bbbbbb,1a1a1a,707171,2a2a2a",d:".............................................................................0112211..........011112212.........0111111112.......011134555561......011347877863......0139776ab663......013cd77ab763......013ceddddd63......0113feegge63.......3h13feee63.........3h1if663..........h333j13..........h11h11j...........h11h11j......."},
+  {p:"96ff00,7fd800,71bf00,ffddcf,d9d9aa,ffffc8,ff0201,644c00,cecea2,c2a99e,f3f3be,020201,c80000,d33232,~c9b4a2,b05658,eb7375",d:"..............................................................................0....1...........20033321.........2100455521.......210045655621.......2785556652........924a5bcdb.........938555cd5..........94566556...........e456aa6...........9e4444............f399.............fggggg...........fggfggg...........93ffggg......."},
+  {p:"4b3800,644b00,ffffff,ffddcf,bfbfbf,000000,bfa69b,a28d84,cdb2a6,b05658,eb7375",d:"..............................................................................011111...........01111111.........011111111.........0112223222.......444252522552......463455245252.......6334427442.........63333333...........8333773...........683333............9366.............9aaaaa...........9aa9aaa...........6399aaa......."},
+  {p:"ff0000,01fe00,0000ff,bfa69b,ffddcf,000000,191919,a28d84,ffff00,9b0d31,ce1241,fffffe",d:"..............................................0................10...............210..............3410.............344404...........34444444..........34445445.........344445445.........346444774..........666466666..........66667766..........3666666...........8466666..........398aa8...........3449885...........3449aba......."},
+  {p:"dfdf00,~e4e400,~f3f300,f9f900,~121212,191919,0e0e0e,ae8b61,85694a,ffffff,a1815a,~8d6f4e,be8b1d,fdb927,552483",d:"........................0123..................................................455556...........45555556.........455555555.........455577777.........455777777.........857796796.........857777aa7.........487775555.........44b775aa5.........448b7755............c788.............8cdddd...........877ceee...........877cd9d......."},
+  {p:"bf0000,ff0000,ffffff,00c6c6,f1f2f1,~06c6c3,d80000,ffff00,ff2726,bfbf00,001a00,4b5e00,647d00,003d00,506401,be8b1d,fdb927,552483",d:"............................................................012222...........01222322.........011245442.........011223332.........066777677781.....9997aaa7aaa7......9bc9aa29aa27.......bc9a29d92a7........bc99ccc97..........ecccddc...........becccc............fcbb.............bfgggg...........bccfhhh...........bccfg2g......."},
+  {p:"~272727,292929,323232,3c3c3c,~f30000,~2d2d2d,d90201,fd0000,bf0000,~ff3939,ff2626,ff3d3d,ff3232,1f1f1f,~242424,4c3826,644b32,434343,57412c,~513c27,be8b1d,fdb927,552483,fffffe",d:"..............................................................................01223...4........015522367........87797a9b847......08ac7ba7a738......deedeedeeee.......df2gdehgdeh.......0fggdehideh5.......0fggggggg5.........0jgggiig...........fjgggg............kgff.............fkllll...........fggkmmm...........fggklnl......."},
+  {p:"b8b800,f5f500,bfbfbf,ffffff,bf0100,fe0000,~f60000,f5f3f3,836849,b05658,ae8b61,eb7375",d:"..............................................................................011111...........01233311.........014555551.........043333335.........043555535.........253533535.........253535675.........043533335.........002555665.........00823333............9a88.............9bbbbb...........9bb9bbb...........8a99bbb......."}
+];
+const ALPH = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+if (typeof module !== 'undefined') module.exports = { REGENS, ALPH };
+</script>
+<script>/* =====================================================================
+   re:BRAWL — simulation engine
+   Pure and deterministic: the same week, roster and career XP always
+   produce the same fights, on every device. No server decides anything;
+   every viewer computes the arena from the shared roster.
+   ===================================================================== */
+(function (root) {
+'use strict';
+
+/* ---------- clock ---------- */
+const MIN = 60e3, HOUR = 60 * MIN, DAY = 24 * HOUR;
+const ROUND_MS = HOUR;                     // a bell every hour
+const WEEK_MS = 7 * DAY;
+const EPOCH = Date.UTC(2026, 0, 5);        // Monday 5 Jan 2026, 00:00 UTC
+const OPEN_MS = 147 * HOUR;                // Mon 00:00 UTC -> Sun 03:00 UTC (Saturday night in Brooklyn)
+const ROUNDS = Math.round(OPEN_MS / ROUND_MS);   // 147 rounds a week
+const REST_ROUNDS = 8;                     // 8 hours at the Anvil
+const MAX_SEATS = 200;
+const HOUSE_FLOOR = 24;                    // house regulars fill the room up to this many fighters
+const MAX_TURNS = 12;
+const TAPE_ROUNDS = 3;                     // the tape keeps the last 3 hours
+const MAX_LEVEL = 150;
+
+const weekIndex = t => Math.floor((t - EPOCH) / WEEK_MS);
+const weekOpen = w => EPOCH + w * WEEK_MS;
+const weekClose = w => weekOpen(w) + OPEN_MS;
+const roundAt = (w, r) => weekOpen(w) + r * ROUND_MS;
+const weekId = w => new Date(weekOpen(w)).toISOString().slice(0, 10);
+const weekFromId = id => Math.round((Date.parse(id + 'T00:00:00Z') - EPOCH) / WEEK_MS);
+// rounds that have rung by time t (0..ROUNDS)
+function roundsRung(w, t) {
+  if (t < weekOpen(w)) return 0;
+  return Math.min(ROUNDS, Math.floor((t - weekOpen(w)) / ROUND_MS) + 1);
+}
+
+/* ---------- rng ---------- */
+function hash(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  return h1 >>> 0;
+}
+function rng(seed) {
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+
+/* ---------- the book: styles, types, looks, gear ---------- */
+// style = how a re:gen fights; personality = how its re:CALL brain leans
+const STYLES = {
+  BRUISER:   { hp: 112, pow: 12.0, def: .05, spd: 4, luck: 4,  agg: .80, cau: .20, cun: .40, cha: .20, blurb: 'Walks forward. Swings heavy. Asks questions never.' },
+  COUNTER:   { hp: 100, pow: 10.2, def: .06, spd: 6, luck: 5,  agg: .38, cau: .45, cun: .95, cha: .08, blurb: 'Watches your hands. Remembers everything.' },
+  HUSTLER:   { hp: 100, pow: 11.2, def: .04, spd: 9, luck: 5,  agg: .65, cau: .35, cun: .60, cha: .22, blurb: 'Quick jabs, quicker feet. Wins on volume.' },
+  TRICKSTER: { hp: 102, pow: 11.0, def: .05, spd: 8, luck: 8,  agg: .50, cau: .35, cun: .60, cha: .55, blurb: 'Leans on the special. Hard to read.' },
+  TANK:      { hp: 114, pow: 9.6,  def: .08, spd: 3, luck: 4,  agg: .40, cau: .55, cun: .50, cha: .12, blurb: 'Takes the hit. Takes the next one too.' },
+  GAMBLER:   { hp: 104, pow: 12.0, def: .03, spd: 5, luck: 11, agg: .60, cau: .15, cun: .30, cha: .70, blurb: 'Lets it ride. Big crits, bad nights.' },
+};
+// type = what a re:gen is made of (from the collection's Type trait); sets its special
+const TYPES = {
+  human:     { hp: 1.00, pow: 1.00, def: 0,   spd: 0,  sp: 'HUSTLE',       spBlurb: 'Two quick shots in one beat.' },
+  robot:     { hp: 1.02, pow: 1.02, def: .02, spd: -1, sp: 'OVERCLOCK',    spBlurb: 'Big hit, then runs hot: +30% power for 2 turns.' },
+  gold:      { hp: 1.00, pow: 1.00, def: .02, spd: 0,  sp: 'BLING',        spBlurb: 'Catches the light. Blinds the other side for 2 turns.' },
+  bones:     { hp: .94,  pow: 1.02, def: 0,   spd: 2,  sp: 'RATTLE',       spBlurb: 'Shakes them so hard they lose their next turn.' },
+  zombie:    { hp: 1.06, pow: 1.00, def: 0,   spd: -1, sp: 'BITE',         spBlurb: 'Heavy bite. Heals half of what it deals.' },
+  ghost:     { hp: .92,  pow: 1.00, def: 0,   spd: 2,  sp: 'PHASE',        spBlurb: 'Nothing lands this turn. Next hit is a sure crit.' },
+  'rebot':   { hp: 1.04, pow: .98,  def: .03, spd: 0,  sp: 're:BOOT',      spBlurb: 'Restores 25% health and halves damage this turn.' },
+  alien:     { hp: .96,  pow: 1.00, def: 0,   spd: 1,  sp: 'PROBE',        spBlurb: 'Reads the next move and makes it crit.' },
+  demoness:  { hp: .98,  pow: 1.02, def: 0,   spd: 1,  sp: 'HEX',          spBlurb: 'Curses them: -30% power for 3 turns.' },
+  celestial: { hp: 1.04, pow: 1.02, def: .02, spd: 0,  sp: 'SMITE',        spBlurb: 'A heavy that no guard can stop.' },
+  ape:       { hp: 1.06, pow: 1.04, def: 0,   spd: -1, sp: 'GROUND POUND', spBlurb: 'Breaks guard and drains 2 stamina.' },
+  mummy:     { hp: 1.04, pow: 1.00, def: .02, spd: -1, sp: 'WRAP',         spBlurb: 'Wraps them up. Their special is locked for 3 turns.' },
+};
+const TYPE_LABEL = { human: 'human', robot: 'robot', gold: 'gold', bones: 'bones', zombie: 'zombie', ghost: 'ghost', rebot: 're:bot', alien: 'alien', demoness: 'demoness', celestial: 'celestial', ape: 'ape', mummy: 'mummy' };
+// the 30 fighters you can send in — sprite i of REGENS
+const LOOKS = [
+  { name: 'GUMSHOE',  type: 'robot',     style: 'COUNTER'   },
+  { name: 'VOIDKID',  type: 'alien',     style: 'TRICKSTER' },
+  { name: 'RED RAG',  type: 'human',     style: 'HUSTLER'   },
+  { name: 'SMILES',   type: 'human',     style: 'GAMBLER'   },
+  { name: 'ORANGE',   type: 'human',     style: 'HUSTLER'   },
+  { name: 'SMOKEY',   type: 'human',     style: 'TANK'      },
+  { name: 'LASERS',   type: 'robot',     style: 'BRUISER'   },
+  { name: 'PRISM',    type: 'human',     style: 'TRICKSTER' },
+  { name: 'GOLDIE',   type: 'gold',      style: 'COUNTER'   },
+  { name: 'THE SUIT', type: 'human',     style: 'COUNTER'   },
+  { name: 'HAPPY',    type: 'human',     style: 'GAMBLER'   },
+  { name: 'LIPPY',    type: 'human',     style: 'HUSTLER'   },
+  { name: 'POPS',     type: 'human',     style: 'TANK'      },
+  { name: 'GOGGLES',  type: 'human',     style: 'BRUISER'   },
+  { name: 'JOE',      type: 'human',     style: 'TANK'      },
+  { name: 'RATTLES',  type: 'bones',     style: 'TRICKSTER' },
+  { name: 'PINKY',    type: 'human',     style: 'HUSTLER'   },
+  { name: 'BREW',     type: 'zombie',    style: 'BRUISER'   },
+  { name: 'BULLION',  type: 'gold',      style: 'GAMBLER'   },
+  { name: 'SCARLET',  type: 'demoness',  style: 'TRICKSTER' },
+  { name: 'DEACON',   type: 'human',     style: 'TANK'      },
+  { name: 'BUBBLES',  type: 'human',     style: 'HUSTLER'   },
+  { name: 'WIRE',     type: 'rebot',     style: 'COUNTER'   },
+  { name: 'GIGGLES',  type: 'ghost',     style: 'GAMBLER'   },
+  { name: 'MOGGS',    type: 'human',     style: 'COUNTER'   },
+  { name: 'MOHAWK',   type: 'human',     style: 'BRUISER'   },
+  { name: 'SAINT',    type: 'celestial', style: 'TANK'      },
+  { name: 'ROT',      type: 'zombie',    style: 'GAMBLER'   },
+  { name: 'BRUNO',    type: 'ape',       style: 'BRUISER'   },
+  { name: 'SPIRAL',   type: 'alien',     style: 'TRICKSTER' },
+];
+// gear unlocks at level milestones — named after collection traits
+const GEAR = [
+  { lvl: 10,  name: 'GOLD STUD',   fx: 'crit +4%' },
+  { lvl: 25,  name: 'LOCZ',        fx: 'dodge +4%' },
+  { lvl: 50,  name: 'BULLETPROOF', fx: 'damage taken -6%' },
+  { lvl: 75,  name: 'BIKER JACKET',fx: 'health +10%' },
+  { lvl: 100, name: 'VVS CHAIN',   fx: 'power +8%' },
+  { lvl: 125, name: 'WINGS',       fx: 'speed +3' },
+  { lvl: 150, name: 'HALO',        fx: 'once a fight, gets back up at 20%' },
+];
+const MOVES = ['S', 'H', 'G', 'X'];        // strike, heavy, guard, special
+const MOVE_NAME = { S: 'STRIKE', H: 'HEAVY', G: 'GUARD', X: 'SPECIAL', '-': 'RATTLED' };
+const COST = { S: 1, H: 2, G: -2, X: 3 };
+const ST_MAX = 6, ST_START = 4, SP_COOLDOWN = 4;
+
+/* ---------- levels ---------- */
+// level 1 -> 150 from career XP. XP = PX earned in settled weeks.
+// ~450 PX in an average week: level 17 after week one, 150 takes a long year at the top
+const XP_K = 1.6;
+const xpForLevel = L => Math.round(XP_K * (L - 1) * (L - 1));
+const levelFromXp = xp => Math.min(MAX_LEVEL, 1 + Math.floor(Math.sqrt(Math.max(0, xp) / XP_K)));
+
+/* ---------- build a fighter for a week ---------- */
+// a fighter is either one of the 30 sample looks (a.look) or a real re:gen (a.token, a.style, a.type, a.px)
+function fighterKind(a) {
+  const look = Number.isInteger(a.look) && a.look >= 0 ? LOOKS[a.look] : null;
+  const style = STYLES[a.style] ? a.style : look ? look.style : 'COUNTER';
+  const type = TYPES[a.type] ? a.type : look ? look.type : 'human';
+  return { look, style, type };
+}
+const validAgentShape = a => !!(a && a.id && ((Number.isInteger(a.look) && a.look >= 0 && a.look < LOOKS.length) ||
+  (Number.isInteger(a.token) && a.token > 0 && STYLES[a.style] && TYPES[a.type])));
+function buildFighter(a, level) {
+  const kind = fighterKind(a);
+  const st = STYLES[kind.style], ty = TYPES[kind.type];
+  const R = rng(hash('dna:' + a.id));
+  const j = (s = .08) => 1 - s + R() * 2 * s;
+  const m = 1 + (level - 1) / (MAX_LEVEL - 1) * 0.28;      // level is a head start, not a guarantee
+  const f = {
+    id: a.id, name: a.name, look: kind.look ? a.look : -1, token: Number.isInteger(a.token) ? a.token : null, art: a.px || null,   // art = 18x18 pixels; px = points
+    house: !!a.house, owner: a.owner || null, level,
+    style: kind.style, type: kind.type,
+    maxHp: st.hp * ty.hp * j() * m,
+    pow: st.pow * ty.pow * j() * m,
+    def: st.def + ty.def,
+    spd: st.spd + ty.spd + R() * 2,
+    luck: st.luck + R() * 2,
+    agg: clamp(st.agg + (R() - .5) * .3), cau: clamp(st.cau + (R() - .5) * .3),
+    cun: clamp(st.cun + (R() - .5) * .3), cha: clamp(st.cha + (R() - .5) * .3),
+    halo: false, gear: [],
+  };
+  for (const g of GEAR) if (level >= g.lvl) f.gear.push(g.name);
+  f.crit = .05 + f.luck * .006; f.dodge = .03 + f.spd * .005;
+  if (level >= 10) f.crit += .04;
+  if (level >= 25) f.dodge += .04;
+  if (level >= 50) f.def += .06;
+  if (level >= 75) f.maxHp *= 1.10;
+  if (level >= 100) f.pow *= 1.08;
+  if (level >= 125) f.spd += 3;
+  if (level >= 150) f.halo = true;
+  f.maxHp = Math.round(f.maxHp);
+  // week state
+  f.hp = f.maxHp; f.px = 0; f.w = 0; f.l = 0; f.ko = 0; f.kod = 0; f.falls = 0;
+  f.rest = -1; f.seated = false; f.lastOp = null; f.history = []; f.mem = {}; f.streak = 0; f.bestStreak = 0;
+  return f;
+}
+
+/* ---------- the re:CALL brain ---------- */
+// guess what the other side will throw: style habits + this fight + every past fight with them
+function predict(me, op, mc, oc) {
+  const p = [.40, .26, .24, .10];
+  const mem = me.mem[op.id];
+  const k = me.cun;
+  if (mem) for (let i = 0; i < 4; i++) p[i] += mem.c[i] * .35 * k;
+  for (let i = 0; i < 4; i++) p[i] += mc.seen[i] * 1.0 * k;     // mc.seen = what they've thrown at me this fight
+  // what can they actually do right now
+  if (oc.st < COST.S) p[0] = 0;
+  if (oc.st < COST.H) p[1] = 0;
+  if (oc.st < COST.X || oc.cd > 0) p[3] = 0;
+  if (oc.stun) return [0, 0, 0, 0];
+  const s = p.reduce((a, b) => a + b, 0) || 1;
+  return p.map(v => v / s);
+}
+// damage I deal (in units of my power) when I throw m and they throw o
+// strike beats heavy (gets in first), heavy beats guard (breaks it), guard beats strike (parry + counter)
+const DEAL = {
+  S: { S: .8, H: 1.0, G: .15, X: .8, '-': .8 },
+  H: { S: .4, H: 1.4, G: 1.4, X: 1.4, '-': 1.4 },
+  G: { S: .5, H: 0, G: 0, X: 0, '-': 0 },
+  X: { S: 1.2, H: 1.2, G: .7, X: 1.2, '-': 1.2 },
+};
+const DMG = 0.5;      // global damage scale
+function choose(me, op, mc, oc, R) {
+  if (mc.stun) return '-';
+  const legal = MOVES.filter(m => m === 'G' || (mc.st >= COST[m] && !(m === 'X' && mc.cd > 0)));
+  let p = predict(me, op, mc, oc);
+  if (mc.probe) { // alien PROBE: knows the next move
+    const sure = oc.plan || 'S'; p = [0, 0, 0, 0]; if (sure !== '-') p[MOVES.indexOf(sure)] = 1;
+  }
+  const hpMe = mc.hp / me.maxHp, hpOp = oc.hp / op.maxHp;
+  const fear = .6 + me.cau * (1.4 - hpMe);                     // how much damage taken hurts
+  const opPow = op.pow * (oc.hex > 0 ? .7 : 1), myPow = me.pow * (mc.oc > 0 ? 1.3 : 1) * (mc.hex > 0 ? .7 : 1);
+  let best = 'G', bestV = -1e9;
+  for (const m of legal) {
+    let v = 0;
+    for (let i = 0; i < 4; i++) {
+      if (!p[i]) continue;
+      const o = MOVES[i];
+      v += p[i] * (DEAL[m][o] * myPow - fear * DEAL[o][m] * opPow) * DMG;
+    }
+    if (oc.stun) v = DEAL[m]['-'] * myPow * DMG;
+    // personality
+    if (m === 'H') v += me.agg * 1.2 - (mc.st <= 2 ? 1.5 : 0);
+    if (m === 'S') v += me.agg * 1.0;
+    if (m === 'G') v += me.cau * (1 - hpMe) * 4 + (mc.st <= 1 ? 3 : 0) - me.agg * 1.5;
+    if (m === 'X') v += 2.5 + me.cha * 2.5 + specialBonus(me, mc, oc, op, hpMe, hpOp);
+    if (hpOp < .2 && m !== 'G') v += me.agg * 3;               // smells the finish
+    v += (R() - .5) * (2 + me.cha * 14);                         // temperament
+    if (v > bestV) { bestV = v; best = m; }
+  }
+  return best;
+}
+function specialBonus(me, mc, oc, op, hpMe, hpOp) {
+  switch (TYPES[me.type].sp) {
+    case 're:BOOT': return hpMe < .45 ? 6 : -4;
+    case 'BITE': return hpMe < .6 ? 3 : 0;
+    case 'PHASE': return hpMe < .5 ? 2 : 0;
+    case 'SMITE': return mc.seen[2] > 1 ? 3 : 1;
+    case 'GROUND POUND': return mc.seen[2] > 0 ? 2.5 : 0;
+    case 'RATTLE': return hpOp < .4 ? 2.5 : 1;
+    default: return 0;
+  }
+}
+
+/* ---------- one fight ---------- */
+// returns { win: 0|1, ko, turns:[...] } and mutates fighters' hp/memory
+function fight(A, B, R, keepTape) {
+  const F = [A, B];
+  const C = F.map(f => ({ hp: f.hp, st: ST_START, cd: 0, seen: [0, 0, 0, 0], stun: false, oc: 0, hex: 0, blind: 0, phase: false, sure: false, probe: false, halo: f.halo, plan: null, moves: [0, 0, 0, 0] }));
+  const turns = keepTape ? [] : null;
+  let ko = -1;
+  for (let t = 0; t < MAX_TURNS && ko < 0; t++) {
+    // both decide at once (PROBE peeks at the other's plan first)
+    const plan = [null, null];
+    for (const i of [0, 1]) if (!C[i].probe) plan[i] = choose(F[i], F[1 - i], C[i], C[1 - i], R);
+    for (const i of [0, 1]) if (C[i].probe) { C[1 - i].plan = plan[1 - i]; plan[i] = choose(F[i], F[1 - i], C[i], C[1 - i], R); C[i].probe = false; }
+    const ev = { m: plan.slice(), hits: [], fx: [] };
+    // pay stamina, cooldowns
+    for (const i of [0, 1]) {
+      const m = plan[i], c = C[i];
+      if (m === '-') { c.stun = false; continue; }
+      c.st = clamp(c.st - COST[m], 0, ST_MAX);
+      if (m === 'X') c.cd = SP_COOLDOWN + 1;
+      c.moves[MOVES.indexOf(m)]++;
+    }
+    // specials that happen before the swing
+    const pre = [false, false];
+    for (const i of [0, 1]) {
+      if (plan[i] !== 'X') continue;
+      const sp = TYPES[F[i].type].sp, c = C[i];
+      if (sp === 'PHASE') { c.phase = true; ev.fx.push([i, 'PHASE']); }
+      if (sp === 're:BOOT') { const h = Math.round(F[i].maxHp * .25); c.hp = Math.min(F[i].maxHp, c.hp + h); c.boot = true; pre[i] = true; ev.fx.push([i, 'BOOT', h]); }
+    }
+    // order of swings: strikes first, then specials, then heavies; speed breaks ties
+    const pri = m => m === 'S' ? 3 : m === 'X' ? 2 : m === 'H' ? 1 : 0;
+    const order = [0, 1].filter(i => plan[i] !== 'G' && plan[i] !== '-' && !pre[i])
+      .sort((a, b) => (pri(plan[b]) - pri(plan[a])) || (F[b].spd + R() * 3 - F[a].spd - R() * 3));
+    for (const i of order) {
+      if (C[i].hp <= 0) continue;
+      const j = 1 - i, me = F[i], op = F[j], mc = C[i], oc = C[j], m = plan[i], o = plan[j];
+      const sp = TYPES[me.type].sp;
+      let pow = me.pow * (mc.oc > 0 ? 1.3 : 1) * (mc.hex > 0 ? .7 : 1);
+      let shots = [];
+      if (m === 'S') shots = [DEAL.S[o]];
+      else if (m === 'H') shots = [DEAL.H[o]];          // a heavy that eats a strike first only lands at half
+      else if (m === 'X') {
+        if (sp === 'PHASE') shots = [o === 'G' ? .3 : .6];
+        else if (sp === 'HUSTLE') shots = o === 'G' ? [.35, .35] : [.7, .7];
+        else if (sp === 'OVERCLOCK') shots = [o === 'G' ? .6 : 1.2];
+        else if (sp === 'BLING') shots = [o === 'G' ? .4 : .8];
+        else if (sp === 'RATTLE') shots = [o === 'G' ? .4 : .8];
+        else if (sp === 'BITE') shots = [o === 'G' ? .65 : 1.3];
+        else if (sp === 'PROBE') shots = [o === 'G' ? .5 : 1.0];
+        else if (sp === 'HEX') shots = [o === 'G' ? .6 : 1.2];
+        else if (sp === 'SMITE') shots = [1.8];
+        else if (sp === 'GROUND POUND') shots = [1.5];
+        else if (sp === 'WRAP') shots = [o === 'G' ? .45 : .9];
+      }
+      let landed = false;
+      for (const mult of shots) {
+        if (oc.hp <= 0) break;
+        const hit = { by: i, k: m, dmg: 0, crit: false, miss: false };
+        let acc = .9 - op.dodge - (mc.blind > 0 ? .35 : 0);
+        if (m === 'X' && (sp === 'SMITE' || sp === 'GROUND POUND')) acc += .08;
+        if ((oc.phase && plan[j] === 'X') || R() > acc) { hit.miss = true; ev.hits.push(hit); continue; }
+        let d = mult * pow * DMG * (.88 + R() * .24);
+        const critCh = mc.sure ? 1 : me.crit;
+        if (R() < critCh) { d *= 1.6; hit.crit = true; mc.sure = false; }
+        d *= 1 - op.def;
+        if (oc.boot) d *= .5;
+        d = Math.max(1, Math.round(d));
+        hit.dmg = d; oc.hp -= d; landed = true;
+        if (m === 'X' && sp === 'BITE') { const h = Math.round(d * .5); mc.hp = Math.min(me.maxHp, mc.hp + h); hit.heal = h; }
+        if (oc.hp <= 0 && oc.halo) { oc.halo = false; oc.hp = Math.round(op.maxHp * .2); ev.fx.push([j, 'HALO']); }
+        ev.hits.push(hit);
+      }
+      if (m === 'H' && o === 'G') { oc.st = Math.max(0, oc.st - 1); ev.fx.push([j, 'BREAK']); }
+      if (m === 'S' && o === 'G') ev.fx.push([j, 'PARRY']);
+      if (m === 'X' && landed) {
+        if (sp === 'OVERCLOCK') mc.oc = 3;
+        if (sp === 'BLING') oc.blind = 3;
+        if (sp === 'RATTLE') oc.stun = true;
+        if (sp === 'HEX') oc.hex = 4;
+        if (sp === 'GROUND POUND') oc.st = Math.max(0, oc.st - 2);
+        if (sp === 'WRAP') oc.cd = Math.max(oc.cd, 4);
+      }
+      if (m === 'X' && sp === 'PROBE') { mc.probe = true; mc.sure = true; }
+      if (m === 'X') ev.fx.push([i, sp]);
+    }
+    // a guard that eats a strike throws a counter
+    for (const i of [0, 1]) {
+      const j = 1 - i;
+      if (plan[i] === 'G' && plan[j] === 'S' && C[i].hp > 0 && C[j].hp > 0) {
+        const d = Math.max(1, Math.round(DEAL.G.S * F[i].pow * DMG * (1 - F[j].def)));
+        C[j].hp -= d; ev.hits.push({ by: i, k: 'C', dmg: d, crit: false, miss: false });
+        if (C[j].hp <= 0 && C[j].halo) { C[j].halo = false; C[j].hp = Math.round(F[j].maxHp * .2); ev.fx.push([j, 'HALO']); }
+      }
+    }
+    // end of turn upkeep
+    for (const i of [0, 1]) {
+      const c = C[i];
+      if (c.phase && plan[i] === 'X') { c.phase = false; c.sure = true; }
+      c.boot = false;
+      if (c.cd > 0) c.cd--; if (c.oc > 0) c.oc--; if (c.hex > 0) c.hex--; if (c.blind > 0) c.blind--;
+      if (plan[1 - i] !== '-') C[i].seen[MOVES.indexOf(plan[1 - i])] += 1;
+    }
+    for (const i of [0, 1]) if (C[i].hp <= 0) { C[i].hp = 0; if (ko < 0) ko = i; }
+    if (C[0].hp <= 0 && C[1].hp <= 0) ko = R() < .5 ? 0 : 1;   // double knockout: coin flip who hit the floor first
+    if (turns) { ev.hp = [C[0].hp, C[1].hp]; ev.st = [C[0].st, C[1].st]; turns.push(ev); }
+  }
+  let win;
+  if (ko >= 0) win = 1 - ko;
+  else {
+    const pa = C[0].hp / A.maxHp, pb = C[1].hp / B.maxHp;
+    win = pa === pb ? (A.spd >= B.spd ? 0 : 1) : (pa > pb ? 0 : 1);
+  }
+  // the re:CALL: every fight gets written down
+  for (const i of [0, 1]) {
+    const me = F[i], op = F[1 - i];
+    const mem = me.mem[op.id] || (me.mem[op.id] = { c: [0, 0, 0, 0], w: 0, l: 0 });
+    for (let k = 0; k < 4; k++) mem.c[k] += C[1 - i].moves[k];
+    if (win === i) mem.w++; else mem.l++;
+    me.hp = Math.max(0, C[i].hp);
+  }
+  return { win, ko: ko >= 0, turns, moves: [C[0].moves, C[1].moves] };
+}
+
+/* ---------- the house: regular re:gens keep the room busy ---------- */
+function houseFighters(w, n) {
+  const R = rng(hash('house:' + w));
+  const out = [], seen = {};
+  // a shuffled deck of the 30 looks, so names rarely repeat
+  const deck = LOOKS.map((_, i) => i);
+  for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  for (let i = 0; i < n; i++) {
+    const look = deck[i % deck.length];
+    seen[look] = (seen[look] || 0) + 1;
+    const name = LOOKS[look].name + (seen[look] > 1 ? ' ' + 'I'.repeat(seen[look]) : '');
+    out.push({ id: 'house' + String(i + 1).padStart(2, '0'), name, look, house: true, level: 1 + Math.floor(R() * 20), on: true });
+  }
+  return out;
+}
+
+/* ---------- roster helpers ---------- */
+// toggle log: [[t, 1|0], ...]. Counts from the next bell after t.
+function isOn(a, t) {
+  let on = false;
+  for (const [ts, v] of a.log || []) { if (ts < t) on = !!v; else break; }
+  return on;
+}
+function firstOn(a) {
+  for (const [ts, v] of a.log || []) if (v) return ts;
+  return Infinity;
+}
+
+/* ---------- a whole week ---------- */
+// roster: agents [{id, look, name, owner, log}], xp: {agentId: careerXp before this week}
+// opts.after = the Sunday after-hours exhibition: same rules, nothing counts
+function Week(w, roster, xp, opts = {}) {
+  this.w = w; this.after = !!opts.after;
+  this.id = weekId(w) + (this.after ? 'x' : ''); this.round = 0;
+  this.start = this.after ? weekClose(w) : weekOpen(w);
+  this.N = this.after ? Math.round((weekOpen(w + 1) - weekClose(w)) / ROUND_MS) : ROUNDS;
+  this.seed = hash('week:' + this.id);
+  this.xp = xp || {};
+  this.agents = roster.filter(validAgentShape)
+    .slice().sort((a, b) => (firstOn(a) - firstOn(b)) || (a.id < b.id ? -1 : 1));
+  this.F = new Map();
+  this.house = houseFighters(this.id, HOUSE_FLOOR);
+  for (const h of this.house) this.F.set(h.id, buildFighter(h, h.level));
+  this.rounds = [];     // per round: { bouts:[...], byes:[], bar:[], resting:[] }
+  this.tapeKeep = opts.tapeKeep ?? TAPE_ROUNDS;
+}
+Week.prototype.fighter = function (a) {
+  let f = this.F.get(a.id);
+  if (!f) { f = buildFighter(a, levelFromXp(this.xp[a.id] || 0)); this.F.set(a.id, f); }
+  return f;
+};
+Week.prototype.step = function () {
+  const r = this.round; if (r >= this.N) return false;
+  const T = this.start + r * ROUND_MS;
+  const R = rng(hash(this.id + ':r' + r));
+  // seats: first come, first served; a seat is kept all week
+  let seated = 0;
+  for (const f of this.F.values()) if (f.seated && !f.house) seated++;
+  const queue = [];
+  for (const a of this.agents) {
+    const f = this.fighter(a);
+    f.on = isOn(a, T);
+    if (!f.seated && f.on) {
+      if (seated < MAX_SEATS) { f.seated = true; f.joined = r; seated++; }
+      else queue.push(a.id);
+    }
+  }
+  // house regulars step aside as players arrive
+  const houseN = Math.max(0, HOUSE_FLOOR - seated);
+  this.house.forEach((h, i) => { const f = this.F.get(h.id); f.on = i < houseN; if (f.on) f.seated = true; });
+  // who's on the floor this bell
+  const floor = [], bar = [], resting = [];
+  for (const f of this.F.values()) {
+    if (!f.seated || !f.on) continue;
+    if (f.rest > r) { resting.push(f.id); continue; }
+    if (f.rest === r) { f.rest = -1; f.hp = f.maxHp; }
+    // the re:CALL decides whether to sit this one out at the bar
+    const hpPct = f.hp / f.maxHp;
+    if (hpPct < .18 + f.cau * .32 && R() < .55 + f.cau * .4) { bar.push(f.id); continue; }
+    floor.push(f);
+  }
+  // matchmaking: similar PX, a little luck, no instant rematches
+  floor.forEach(f => { f._k = f.px + R() * 30; });
+  floor.sort((a, b) => b._k - a._k || (a.id < b.id ? -1 : 1));
+  const bouts = [], byes = [];
+  // odd one out: a random sit-out, never the same fighter two bells running
+  if (floor.length % 2) {
+    let k = Math.floor(R() * floor.length);
+    if (floor[k].bye === r - 1 && floor.length > 1) k = (k + 1) % floor.length;
+    const [f] = floor.splice(k, 1); f.bye = r; byes.push(f.id);
+  }
+  for (let i = 0; i + 1 < floor.length; i += 2) {
+    if (floor[i].lastOp === floor[i + 1].id && i + 2 < floor.length) { const t = floor[i + 1]; floor[i + 1] = floor[i + 2]; floor[i + 2] = t; }
+    bouts.push([floor[i], floor[i + 1]]);
+  }
+  const out = { r, t: T, bouts: [], byes, bar, resting, queue };
+  bouts.forEach(([A, B], bi) => {
+    const BR = rng(hash(this.id + ':r' + r + ':' + A.id + ':' + B.id));
+    const hp0 = [A.hp, B.hp];
+    const met = A.mem[B.id] ? A.mem[B.id].w + A.mem[B.id].l : 0;   // how many times the re:CALL has seen this before
+    const res = fight(A, B, BR, true);
+    const win = res.win ? B : A, lose = res.win ? A : B;
+    const upset = Math.max(0, Math.floor((lose.level - win.level) / 10));
+    const gain = (res.ko ? 18 : 8) + upset, lgain = res.ko ? 0 : 1;
+    win.px += gain; lose.px += lgain; win.w++; lose.l++;
+    win.streak++; win.bestStreak = Math.max(win.bestStreak, win.streak); lose.streak = 0;
+    if (res.ko) { win.ko++; lose.kod++; lose.falls++; lose.rest = r + REST_ROUNDS + 1; lose.hp = 0; }
+    A.lastOp = B.id; B.lastOp = A.id;
+    const bout = { r, i: bi, a: A.id, b: B.id, win: res.win, ko: res.ko, px: res.win ? [lgain, gain] : [gain, lgain],
+      hp0, hp1: [A.hp, B.hp], max: [A.maxHp, B.maxHp], n: res.turns.length, turns: res.turns, lv: [A.level, B.level], met };
+    A.history.push({ r, op: B.id, win: res.win === 0, ko: res.ko, px: bout.px[0], i: bi });
+    B.history.push({ r, op: A.id, win: res.win === 1, ko: res.ko, px: bout.px[1], i: bi });
+    out.bouts.push(bout);
+  });
+  // between bells: patch up
+  for (const f of this.F.values()) {
+    if (!f.seated || f.rest > r) continue;
+    const inBar = bar.includes(f.id), fought = out.bouts.some(b => b.a === f.id || b.b === f.id);
+    const heal = inBar ? .25 : fought ? .12 : .18;
+    f.hp = Math.min(f.maxHp, Math.round(f.hp + f.maxHp * heal));
+  }
+  this.rounds.push(out);
+  // the tape only keeps the last few rounds
+  const old = this.rounds[r - this.tapeKeep];
+  if (old) for (const b of old.bouts) b.turns = null;
+  this.round++;
+  return true;
+};
+Week.prototype.advanceTo = function (n) { while (this.round < Math.min(n, this.N)) this.step(); return this; };
+Week.prototype.rung = function (t) { return t < this.start ? 0 : Math.min(this.N, Math.floor((t - this.start) / ROUND_MS) + 1); };
+Week.prototype.nextBell = function (t) { const r = this.rung(t); return r >= this.N ? null : this.start + r * ROUND_MS; };
+Week.prototype.end = function () { return this.start + this.N * ROUND_MS; };
+Week.prototype.standings = function () {
+  return [...this.F.values()].filter(f => f.seated)
+    .sort((a, b) => (b.px - a.px) || (b.w - a.w) || (a.l - b.l) || (a.id < b.id ? -1 : 1));
+};
+Week.prototype.boothSize = function () { return Math.max(1, Math.ceil(this.standings().length * .10)); };
+Week.prototype.status = function (f, r = this.round) {
+  if (!f.seated) return f.on ? 'QUEUED' : 'BENCHED';
+  if (!f.on) return 'BENCHED';
+  if (f.rest >= r) return 'ANVIL';
+  return 'FLOOR';
+};
+// what goes into the settled record when the last bell rings
+Week.prototype.settle = function () {
+  const s = this.standings(), n = this.boothSize();
+  const xp = {}, rec = {};
+  for (const f of s) if (!f.house) { xp[f.id] = f.px; rec[f.id] = [f.w, f.l, f.ko]; }
+  return { week: this.id, xp, rec, booth: s.slice(0, n).map(f => f.id), champ: s[0] ? s[0].id : null, fighters: s.length };
+};
+
+const api = {
+  ROUND_MS, WEEK_MS, EPOCH, OPEN_MS, ROUNDS, REST_ROUNDS, MAX_SEATS, HOUSE_FLOOR, MAX_TURNS, TAPE_ROUNDS, MAX_LEVEL,
+  STYLES, TYPES, TYPE_LABEL, LOOKS, GEAR, MOVES, MOVE_NAME, ST_MAX,
+  weekIndex, weekOpen, weekClose, roundAt, weekId, weekFromId, roundsRung,
+  hash, rng, xpForLevel, levelFromXp, buildFighter, fighterKind, validAgentShape, fight, isOn, firstOn, Week,
+};
+if (typeof module !== 'undefined') module.exports = api; else root.Brawl = api;
+})(this);
+</script>
+<script>/* =====================================================================
+   re:informant — Who's the rat at DeStefano's?
+   Every bell, the room splits into tables. One re:gen at each table is
+   secretly a rat. By day they share tips, talk and vote someone out.
+   By night the rat takes someone out back. Nobody steers.
+   Pure and deterministic, like re:BRAWL's engine, which it builds on.
+   ===================================================================== */
+(function (root) {
+'use strict';
+const B = typeof module !== 'undefined' ? require('./sim.js') : root.Brawl;
+const { hash, rng, LOOKS, TYPES, ROUND_MS, ROUNDS, MAX_SEATS, TAPE_ROUNDS, MAX_LEVEL, weekId, weekOpen, weekClose, isOn, firstOn, levelFromXp } = B;
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const HOUSE_FLOOR = 21;     // three full tables when the room is quiet
+const MAX_DAYS = 5;
+
+// the six fighting styles, read as the six kinds of people at a table
+const ROLES = {
+  BRUISER:   { label: 'MUSCLE',    per: .35, pers: .75, dec: .35, res: .55, talk: 1, agg: .80, cha: .15, blurb: 'Points first. Asks questions never.' },
+  COUNTER:   { label: 'DETECTIVE', per: .80, pers: .50, dec: .45, res: .60, talk: 1, agg: .40, cha: .05, blurb: 'Watches hands. Catches tells.' },
+  HUSTLER:   { label: 'TALKER',    per: .50, pers: .70, dec: .55, res: .40, talk: 2, agg: .60, cha: .15, blurb: 'Never stops talking. Sometimes says something.' },
+  TRICKSTER: { label: 'GRIFTER',   per: .48, pers: .55, dec: .80, res: .45, talk: 1, agg: .50, cha: .30, blurb: 'Lies like breathing. A nightmare when it draws the rat.' },
+  TANK:      { label: 'ROCK',      per: .58, pers: .48, dec: .48, res: .85, talk: 1, agg: .30, cha: .05, blurb: 'Says little. Moves for nobody.' },
+  GAMBLER:   { label: 'WILDCARD',  per: .45, pers: .55, dec: .55, res: .40, talk: 1, agg: .60, cha: .60, blurb: 'Plays hunches. Right more often than it should be.' },
+};
+// what each type brings to the table
+const KNACKS = {
+  human:     { name: 'HUSTLE',     blurb: 'Gets an extra word in every day.' },
+  robot:     { name: 'LOGS',       blurb: 'Keeps a record. Stops trusting a bad accuser twice as fast.' },
+  gold:      { name: 'BLING',      blurb: 'People listen when gold talks: +40% persuasion.' },
+  bones:     { name: 'RATTLE',     blurb: 'Accusations slide off it: they land 30% lighter.' },
+  zombie:    { name: 'COMES BACK', blurb: 'Taken out back once, it walks back in the next day.' },
+  ghost:     { name: 'OVERHEAR',   blurb: 'Picks up an extra tip every day.' },
+  rebot:     { name: 're:BOOT',    blurb: 'Shrugs off pressure. Hard to talk out of a read.' },
+  alien:     { name: 'PROBE',      blurb: "Once a game, reads one player's role. Right 3 times in 4." },
+  demoness:  { name: 'HEX',        blurb: 'Its vote counts one and a half.' },
+  celestial: { name: 'HALO',       blurb: 'Everyone starts out trusting it a little more.' },
+  ape:       { name: 'SHOUT',      blurb: 'Accusations hit twice as hard. A wrong one costs twice the trust.' },
+  mummy:     { name: 'WRAP',       blurb: 'Once a game, wraps someone up. No talking for a day.' },
+};
+
+function buildPlayer(a, level) {
+  const f = B.buildFighter(a, level);
+  const r = ROLES[f.style];
+  const R = rng(hash('mind:' + a.id));
+  const lv = (level - 1) / (MAX_LEVEL - 1) * .15;       // levels sharpen every sense a little
+  const j = () => (R() - .5) * .12;
+  Object.assign(f, {
+    per: clamp(r.per + lv + j(), .05, .98), pers: clamp(r.pers + lv + j(), .05, .98),
+    dec: clamp(r.dec + lv + j(), .05, .98), res: clamp(r.res + lv + j(), .05, .98),
+    agg: clamp(r.agg + j()), cha: clamp(r.cha + j()), talk: r.talk,
+    px: 0, w: 0, l: 0, games: 0, ratGames: 0, ratWins: 0, calls: 0, reads: 0, wrongOuts: 0, survived: 0,
+    history: [], mem: {}, seated: false, streak: 0, bestStreak: 0,
+  });
+  return f;
+}
+
+function shuffle(a, R) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------- one table, one game ---------- */
+function playTable(fs, R, keep) {
+  const n = fs.length, ratI = Math.floor(R() * n);
+  const P = fs.map((f, i) => ({ i, f, rat: i === ratI, alive: true, sus: new Array(n).fill(0), trust: new Array(n).fill(1),
+    tip: -1, accusedToday: -1, silent: false, back: f.type === 'zombie', probe: f.type === 'alien', wrap: f.type === 'mummy', lies: 0 }));
+  // the re:CALL: last games color who you trust tonight
+  for (const p of P) for (const q of P) {
+    if (p === q) continue;
+    const m = p.f.mem[q.f.id];
+    if (m) { p.trust[q.i] = clamp(Math.pow(.82, m.lied) * Math.pow(1.12, m.called), .3, 1.7); p.sus[q.i] += .2 * Math.min(3, m.lied); }
+    if (q.f.type === 'celestial') p.trust[q.i] *= 1.3;
+  }
+  const ev = [], push = e => { if (keep) ev.push(e); };
+  const living = () => P.filter(p => p.alive);
+  const liveInno = () => P.filter(p => p.alive && !p.rat);
+  // what the table thinks of each seat, for the heat bars
+  const heat = () => P.map(q => {
+    if (!q.alive) return 0;
+    const ls = liveInno().filter(l => l !== q);
+    return ls.length ? Math.round(ls.reduce((s, l) => s + l.sus[q.i], 0) / ls.length * 100) / 100 : 0;
+  });
+  const argmax = (arr, score) => { let best = null, bv = -1e9; for (const x of arr) { const v = score(x); if (v > bv) { bv = v; best = x; } } return best; };
+  let winner = null, day = 0, firstCall = -1;
+  const calls = [];      // [by, on, day]
+
+  function listen(A, kind, T, w) {
+    const noticed = [];
+    const lying = A.rat && T !== ratI && ['accuse', 'tipaccuse', 'deflect', 'probe'].includes(kind);
+    if (A.rat && lying) A.lies++;
+    let pers = A.f.pers * (A.f.type === 'gold' ? 1.4 : 1) * (A.f.type === 'ape' && w > 0 ? 1.6 : 1);
+    if (A.rat) pers = Math.max(pers, A.f.dec * 1.15);     // a good liar sells it
+    for (const L of living()) {
+      if (L === A || L.rat) continue;
+      if (lying && R() < clamp((L.f.per - A.f.dec) * .5 + .03, .01, .4)) {      // caught a tell
+        L.sus[A.i] += 1.2; L.trust[A.i] *= .8; noticed.push(L.i);
+      }
+      if (kind === 'defend') { L.sus[A.i] -= .35 * pers * L.trust[A.i] * (1 - .5 * L.f.res); continue; }
+      if (L.i === T) {                         // you know you're clean, so the accuser looks shady
+        if (w > 0) { L.sus[A.i] += .4; L.trust[A.i] *= .88; L.accusedToday = A.i; }
+        continue;
+      }
+      if (w > 0 && L.sus[A.i] > L.sus[T] + 1) { L.sus[A.i] += .2; continue; }   // sees it as deflection
+      const resist = 1 - .55 * L.f.res * (L.f.type === 'rebot' ? 1.4 : 1);
+      L.sus[T] += w * pers * L.trust[A.i] * Math.max(.1, resist) * (P[T].f.type === 'bones' && w > 0 ? .7 : 1);
+    }
+    if (w > 0) {
+      calls.push([A.i, T, day]);
+      if (T === ratI && firstCall < 0 && !A.rat) firstCall = A.i;
+    }
+    push({ k: 'say', by: A.i, kind, on: T, noticed, heat: heat() });
+  }
+
+  function speak(p) {
+    const others = living().filter(q => q !== p);
+    if (!others.length) return;
+    if (!p.rat) {
+      if (p.probe) {                                             // alien: read someone
+        const t = argmax(others, q => p.sus[q.i]);
+        const right = R() < .75, dirty = right ? t.rat : !t.rat;
+        p.sus[t.i] += dirty ? 3 : -1.5; p.probe = false;
+        push({ k: 'probe', by: p.i, on: t.i });
+        return listen(p, dirty ? 'probe' : 'clear', t.i, dirty ? 1.4 : -.6);
+      }
+      const t = argmax(others, q => p.sus[q.i]);
+      if (p.wrap && p.sus[t.i] > 1.2) { p.wrap = false; P[t.i].silent = true; push({ k: 'wrap', by: p.i, on: t.i, heat: heat() }); return; }
+      if (p.accusedToday >= 0 && P[p.accusedToday].alive && R() < .6) {
+        const acc = P[p.accusedToday]; p.accusedToday = -1;
+        if (p.sus[acc.i] > 1) return listen(p, 'counter', acc.i, .5);
+        return listen(p, 'defend', p.i, 0);
+      }
+      const bar = .9 - p.f.agg * .6;
+      if (p.sus[t.i] > bar) return listen(p, p.tip === t.i ? 'tipaccuse' : 'accuse', t.i, p.tip === t.i ? .65 : .5);
+      if (p.tip >= 0 && P[p.tip].alive) { const tp = p.tip; p.tip = -1; return listen(p, 'share', tp, .6); }
+      const clean = argmax(others, q => -p.sus[q.i]);
+      if (p.sus[clean.i] < -.3 && R() < .6) return listen(p, 'vouch', clean.i, -.45);
+      return push({ k: 'say', by: p.i, kind: 'hmm', on: -1, noticed: [], heat: heat() });
+    }
+    // the rat: steer the table toward someone clean
+    const inn = others.filter(q => !q.rat);
+    if (!inn.length) return;
+    const h = heat();
+    const threat = argmax(inn, q => q.sus[p.i] + q.f.per * .5);
+    const goat = argmax(inn, q => h[q.i] + (q === threat ? .3 : 0));
+    if (p.wrap && threat.sus[p.i] > .8) { p.wrap = false; threat.silent = true; push({ k: 'wrap', by: p.i, on: threat.i, heat: h }); return; }
+    if (p.accusedToday >= 0 && P[p.accusedToday].alive) {
+      const acc = P[p.accusedToday]; p.accusedToday = -1;
+      // cornered: swear it saw the accuser by the back door, or play it cool
+      return R() < .6 ? listen(p, R() < .5 ? 'tipaccuse' : 'deflect', acc.i, .65) : listen(p, 'defend', p.i, 0);
+    }
+    if (day === 1 && R() < .5) {                                   // lie low on the first day
+      if (R() < .5) { const v = argmax(inn, q => -h[q.i]); return listen(p, 'vouch', v.i, -.45); }
+      return push({ k: 'say', by: p.i, kind: 'hmm', on: -1, noticed: [], heat: h });
+    }
+    if (p.probe && R() < .5) { p.probe = false; push({ k: 'probe', by: p.i, on: goat.i }); return listen(p, 'probe', goat.i, 1.4); }
+    if (R() < .45) return listen(p, 'tipaccuse', goat.i, .65);      // a made-up tip
+    if (R() < .2) { const v = argmax(inn, q => -h[q.i]); return listen(p, 'vouch', v.i, -.45); }
+    return listen(p, 'accuse', goat.i, .55);
+  }
+
+  push({ k: 'deal', n });
+  while (!winner && day < MAX_DAYS) {
+    day++;
+    for (const p of P) { p.silent = false; p.accusedToday = -1; }
+    push({ k: 'day', d: day, alive: P.map(p => p.alive), heat: heat() });
+    // tips: somebody saw something
+    for (const p of liveInno()) {
+      let tips = R() < .32 ? 1 : 0; if (p.f.type === 'ghost') tips++;
+      for (let t = 0; t < tips; t++) {
+        const pool = liveInno().filter(q => q !== p);
+        const truth = R() < .12 + .38 * p.f.per || !pool.length;
+        const on = truth ? ratI : pool[Math.floor(R() * pool.length)].i;
+        p.sus[on] += .6 * (.4 + p.f.per); p.tip = on;
+        push({ k: 'tip', by: p.i, on, heat: heat() });
+      }
+    }
+    // talk
+    for (const p of shuffle(living(), R)) {
+      const turns = p.f.talk + (p.f.type === 'human' ? 1 : 0);
+      for (let t = 0; t < turns && p.alive && !p.silent; t++) speak(p);
+    }
+    // the accused who haven't answered get one word back
+    for (const p of living()) if (p.accusedToday >= 0 && !p.silent) speak(p);
+    // vote
+    const tally = new Array(n).fill(0), votes = [];
+    for (const p of shuffle(living(), R)) {
+      const others = living().filter(q => q !== p);
+      let t;
+      if (p.rat) { const h = heat(); t = argmax(others.filter(q => !q.rat), q => tally[q.i] * .8 + h[q.i]); }
+      else {
+        t = argmax(others, q => p.sus[q.i] + (p.f.style === 'TANK' ? 0 : .25 * tally[q.i]) + (R() - .5) * (.5 + p.f.cha * 2));
+        // not sure enough? keep your hand down (wildcards always vote)
+        if (p.sus[t.i] < .55 - p.f.cha * .5 && tally[t.i] < 2) { votes.push([p.i, -1, 0]); continue; }
+      }
+      if (!t) continue;
+      const wv = p.f.type === 'demoness' ? 1.5 : 1;
+      tally[t.i] += wv; votes.push([p.i, t.i, wv]);
+    }
+    const max = Math.max(...tally), tops = tally.map((v, i) => v === max ? i : -1).filter(i => i >= 0);
+    // someone goes out only on a clear plurality: more than a third of the votes cast
+    const cast = votes.reduce((a, v) => a + v[2], 0);
+    const out = tops.length === 1 && max >= 2 && max > cast / 3 ? tops[0] : -1;
+    push({ k: 'vote', votes, tally, out, heat: heat() });
+    if (out >= 0) {
+      P[out].alive = false;
+      if (out === ratI) { winner = 'town'; break; }
+      // a clean one went out: the table remembers who pushed for it
+      for (const L of liveInno()) for (const [by, on] of calls) if (on === out && by !== L.i) {
+        const hit = (P[by].f.type === 'ape' ? .8 : .9);
+        L.trust[by] *= L.f.type === 'robot' ? hit * hit : hit;
+      }
+    }
+    if (living().length <= 3) { winner = 'rat'; break; }
+    // night: the rat takes someone out back
+    const victim = argmax(liveInno(), q => q.sus[ratI] + q.f.per * .5 + R() * .3);
+    if (!victim) { winner = 'rat'; break; }
+    if (victim.back) { victim.back = false; push({ k: 'night', on: victim.i, back: true }); }
+    else { victim.alive = false; push({ k: 'night', on: victim.i, back: false }); }
+    if (living().length <= 3) { winner = 'rat'; break; }
+  }
+  if (!winner) winner = 'rat';
+  push({ k: 'end', winner, rat: ratI, firstCall });
+
+  // pay out
+  const px = new Array(n).fill(0), lastVote = ev.filter(e => e.k === 'vote').pop();
+  const finalVoters = new Set();
+  if (winner === 'town') for (const [v, t] of (lastVote ? lastVote.votes : [])) if (t === ratI) finalVoters.add(v);
+  for (const p of P) {
+    if (p.rat) px[p.i] = winner === 'rat' ? 25 + 3 * P.filter(q => !q.rat && !q.alive).length : 1;
+    else if (winner === 'town') px[p.i] = (p.alive ? 10 : 5) + (finalVoters.has(p.i) ? 4 : 0) + (p.i === firstCall ? 5 : 0);
+    else px[p.i] = 2 + (p.i === firstCall ? 3 : 0);
+  }
+  // the re:CALL writes it all down
+  const rat = P[ratI];
+  for (const L of P) {
+    if (L.rat) continue;
+    const m = L.f.mem[rat.f.id] || (L.f.mem[rat.f.id] = { lied: 0, called: 0, games: 0 });
+    if (rat.lies) m.lied++;
+    if (firstCall >= 0 && firstCall !== L.i) { const c = L.f.mem[P[firstCall].f.id] || (L.f.mem[P[firstCall].f.id] = { lied: 0, called: 0, games: 0 }); c.called++; }
+  }
+  for (const p of P) for (const q of P) if (p !== q) { const m = p.f.mem[q.f.id] || (p.f.mem[q.f.id] = { lied: 0, called: 0, games: 0 }); m.games++; }
+  return { n, ids: fs.map(f => f.id), rat: ratI, winner, days: day, px, firstCall, finalVoters: [...finalVoters],
+    alive: P.map(p => p.alive), events: keep ? ev : null, lv: fs.map(f => f.level) };
+}
+
+/* ---------- the house regulars ---------- */
+function houseRegulars(id, n) {
+  const R = rng(hash('house:' + id));
+  const deck = shuffle(LOOKS.map((_, i) => i), R), seen = {}, out = [];
+  for (let i = 0; i < n; i++) {
+    const look = deck[i % deck.length]; seen[look] = (seen[look] || 0) + 1;
+    out.push({ id: 'house' + String(i + 1).padStart(2, '0'), name: LOOKS[look].name + (seen[look] > 1 ? ' ' + 'I'.repeat(seen[look]) : ''), look, house: true, level: 1 + Math.floor(R() * 20) });
+  }
+  return out;
+}
+function tableSizes(count) {
+  if (count < 5) return [];
+  let k = Math.ceil(count / 8);
+  while (k > 1 && count / k < 6) k--;
+  const base = Math.floor(count / k), extra = count % k;
+  return Array.from({ length: k }, (_, i) => base + (i < extra ? 1 : 0));
+}
+
+/* ---------- a week of nights ---------- */
+function RatWeek(w, roster, xp, opts = {}) {
+  this.w = w; this.after = !!opts.after;
+  this.id = 'rat:' + weekId(w) + (this.after ? 'x' : ''); this.round = 0;
+  this.start = this.after ? weekClose(w) : weekOpen(w);
+  this.N = this.after ? Math.round((weekOpen(w + 1) - weekClose(w)) / ROUND_MS) : ROUNDS;
+  this.xp = xp || {};
+  this.agents = roster.filter(B.validAgentShape).slice().sort((a, b) => (firstOn(a) - firstOn(b)) || (a.id < b.id ? -1 : 1));
+  this.F = new Map();
+  this.house = houseRegulars(this.id, HOUSE_FLOOR);
+  for (const h of this.house) this.F.set(h.id, buildPlayer(h, h.level));
+  this.rounds = [];
+  this.tapeKeep = opts.tapeKeep ?? TAPE_ROUNDS;
+}
+RatWeek.prototype.player = function (a) {
+  let f = this.F.get(a.id);
+  if (!f) { f = buildPlayer(a, levelFromXp(this.xp[a.id] || 0)); this.F.set(a.id, f); }
+  return f;
+};
+RatWeek.prototype.step = function () {
+  const r = this.round; if (r >= this.N) return false;
+  const T = this.start + r * ROUND_MS;
+  const R = rng(hash(this.id + ':r' + r));
+  let seated = 0;
+  for (const f of this.F.values()) if (f.seated && !f.house) seated++;
+  const queue = [];
+  for (const a of this.agents) {
+    const f = this.player(a);
+    f.on = isOn(a, T);
+    if (!f.seated && f.on) { if (seated < MAX_SEATS) { f.seated = true; seated++; } else queue.push(a.id); }
+  }
+  let playing = 0; for (const f of this.F.values()) if (!f.house && f.seated && f.on) playing++;
+  const houseN = Math.max(0, HOUSE_FLOOR - playing);
+  this.house.forEach((h, i) => { const f = this.F.get(h.id); f.on = i < houseN; if (f.on) f.seated = true; });
+  const room = shuffle([...this.F.values()].filter(f => f.seated && f.on), R);
+  const sizes = tableSizes(room.length);
+  const out = { r, t: T, tables: [], queue };
+  let at = 0;
+  sizes.forEach((sz, ti) => {
+    const fs = room.slice(at, at + sz); at += sz;
+    const g = playTable(fs, rng(hash(this.id + ':r' + r + ':t' + ti)), true);
+    g.r = r; g.i = ti;
+    fs.forEach((f, k) => {
+      const rat = k === g.rat, won = (g.winner === 'rat') === rat;
+      f.px += g.px[k]; f.games++; if (won) { f.w++; f.streak++; f.bestStreak = Math.max(f.bestStreak, f.streak); } else { f.l++; f.streak = 0; }
+      if (rat) { f.ratGames++; if (won) f.ratWins++; }
+      if (k === g.firstCall) f.calls++;
+      if (g.finalVoters.includes(k)) f.reads++;
+      if (g.alive[k]) f.survived++;
+      f.history.push({ r, i: ti, rat, won, px: g.px[k] });
+    });
+    out.tables.push(g);
+  });
+  this.rounds.push(out);
+  const old = this.rounds[r - this.tapeKeep];
+  if (old) for (const g of old.tables) g.events = null;
+  this.round++;
+  return true;
+};
+RatWeek.prototype.advanceTo = function (n) { while (this.round < Math.min(n, this.N)) this.step(); return this; };
+RatWeek.prototype.rung = function (t) { return t < this.start ? 0 : Math.min(this.N, Math.floor((t - this.start) / ROUND_MS) + 1); };
+RatWeek.prototype.nextBell = function (t) { const r = this.rung(t); return r >= this.N ? null : this.start + r * ROUND_MS; };
+RatWeek.prototype.standings = function () {
+  return [...this.F.values()].filter(f => f.seated).sort((a, b) => (b.px - a.px) || (b.w - a.w) || (a.id < b.id ? -1 : 1));
+};
+RatWeek.prototype.boothSize = function () { return Math.max(1, Math.ceil(this.standings().length * .10)); };
+RatWeek.prototype.status = function (f) { if (!f.seated) return f.on ? 'QUEUED' : 'BENCHED'; return f.on ? 'TABLE' : 'BENCHED'; };
+RatWeek.prototype.settle = function () {
+  const s = this.standings(), n = this.boothSize(), xp = {};
+  for (const f of s) if (!f.house) xp[f.id] = f.px;
+  return { week: weekId(this.w), xp, booth: s.slice(0, n).map(f => f.id), champ: s[0] ? s[0].id : null, fighters: s.length };
+};
+
+const api = { ROLES, KNACKS, HOUSE_FLOOR, MAX_DAYS, playTable, buildPlayer, tableSizes, RatWeek };
+if (typeof module !== 'undefined') module.exports = api; else root.Rat = api;
+})(this);
+</script>
+<script>(() => {
+'use strict';
+const B = window.Brawl, Rat = window.Rat;
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+let clockOffset = 0;
+const now = () => Date.now() + clockOffset;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+let toastT = 0;
+function toast(msg) { const el = $('#toast'); el.textContent = msg; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 2600); }
+const fmtTime = t => new Date(t).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+const fmtClock = t => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+function fmtLeft(ms) {
+  if (ms <= 0) return 'now';
+  const m = Math.ceil(ms / 60e3), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60;
+  return d ? `${d}d ${h}h` : h ? `${h}h ${mm}m` : `${mm}m`;
+}
+
+/* =====================================================================
+   SPRITES — same palette rules as re:STACK / re:RUN / re:PET
+   ===================================================================== */
+const rgb = h => { h = h.replace(/[#~]/g, ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); };
+const GRAIN = [-6, -2, 2, 6];
+function grain(x, y, seed = 0) {
+  let h = (x * 374761393 + y * 668265263 + seed * 1442695041) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return GRAIN[(h >>> 0) % 4];
+}
+const grainy = (c, x, y, seed) => { const n = grain(x, y, seed); return c.map(v => Math.max(0, Math.min(255, v + n))); };
+function makeCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function paint(w, h, fn) {
+  const c = makeCanvas(w, h), g = c.getContext('2d'), id = g.createImageData(w, h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const p = fn(x, y); if (!p) continue;
+    const i = (y * w + x) * 4;
+    id.data[i] = p[0]; id.data[i + 1] = p[1]; id.data[i + 2] = p[2]; id.data[i + 3] = p[3] ?? 255;
+  }
+  g.putImageData(id, 0, 0); return c;
+}
+const spriteCache = new Map();
+// art source: a look index (the 30 samples) or a fighter/agent; real re:gens carry their own 18x18 px data
+const artOf = src => {
+  if (src && typeof src === 'object') {
+    const d = src.art || (src.px && typeof src.px === 'object' ? src.px : null);   // fighters carry .art, roster entries carry .px
+    if (d && typeof d.p === 'string' && typeof d.d === 'string') return { key: 't' + src.token, data: d, seed: src.token | 0 };
+    return { key: String(src.look >= 0 ? src.look : 0), data: REGENS[src.look >= 0 ? src.look : 0], seed: src.look | 0 };
+  }
+  return { key: String(src), data: REGENS[src], seed: src };
+};
+// kind: n normal · flash white · sil silhouette · dim darker
+function sprite(src, flip = false, kind = 'n') {
+  const art = artOf(src), i = art.seed;
+  const key = art.key + (flip ? 'f' : '') + kind;
+  if (spriteCache.has(key)) return spriteCache.get(key);
+  const { p, d } = art.data;
+  const cols = p.split(',').map(h => ({ c: rgb(h), t: h[0] === '~' }));
+  const SIL = rgb('#21362C'), SIL2 = rgb('#2b443a');
+  const c = paint(18, 18, (x, y) => {
+    const sx = flip ? 17 - x : x;
+    const ch = d[y * 18 + sx]; if (ch === '.') return null;
+    const entry = cols[ALPH.indexOf(ch)]; if (!entry || entry.c.some(Number.isNaN)) return null;
+    const { c: col, t } = entry;
+    if (kind === 'flash') return [255, 255, 255];
+    if (kind === 'sil') return grainy((x + y) % 7 ? SIL : SIL2, x, y, 4);
+    const base = t ? grainy(col, sx, y, i) : col;
+    return kind === 'dim' ? base.map(v => v * .45) : base;
+  });
+  spriteCache.set(key, c); return c;
+}
+const thumbCache = new Map();
+function thumb(i, s = 2) {
+  const key = artOf(i).key + ':' + s;
+  if (thumbCache.has(key)) return thumbCache.get(key);
+  const c = makeCanvas(18 * s, 18 * s), g = c.getContext('2d');
+  g.imageSmoothingEnabled = false; g.fillStyle = '#639685'; g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(sprite(i), 0, 0, c.width, c.height);
+  const url = c.toDataURL(); thumbCache.set(key, url); return url;
+}
+// brand rule: "re:" stays lowercase, even inside all-caps labels
+const fixRe = html => html.replace(/>([^<]*)/g, (m, t) => '>' + t.replace(/re:/gi, '<span class="re">re:</span>'));
+const setHTML = (el, html) => { el.innerHTML = fixRe('<i hidden></i>' + html).replace('<i hidden></i>', ''); };
+const img = (look, size = 36, s = 2) => `<img class="px" src="${thumb(look, s)}" width="${size}" height="${size}" alt="">`;
+
+/* ---------- 3x5 bitmap font (same as the other re:gen games) ---------- */
+const FONT = {
+ '0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001',
+ '5':'111100111001111','6':'111100111101111','7':'111001010010010','8':'111101111101111','9':'111101111001111',
+ A:'010101111101101',B:'110101110101110',C:'011100100100011',D:'110101101101110',E:'111100110100111',
+ F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',J:'001001001101010',
+ K:'101101110101101',L:'100100100100111',M:'101111101101101',N:'101111111111101',O:'010101101101010',
+ P:'110101110100100',Q:'010101101110011',R:'110101110101101',S:'011100010001110',T:'111010010010010',
+ U:'101101101101111',V:'101101101101010',W:'101101111111101',X:'101101010101101',Y:'101101010010010',
+ Z:'111001010100111', r:'000011100100100', e:'000011111100011',
+ ':':'000010000010000','.':'000000000000010','!':'010010010000010','?':'111001010000010',
+ '-':'000000111000000','/':'001001010100100','#':'101111101111101','+':'000010111010000',
+ "'":'010010000000000',',':'000000000010100',' ':'000000000000000','x':'000101010101000'
+};
+// M and W get 5 columns so they don't read as H and N
+const WIDE = { M: '1000111011101011000110001', W: '1000110001101011101110001', '#': '0101011111010101111101010' };
+function drawText(g, str, x, y, color, s = 1) {
+  g.fillStyle = color; let cx = x;
+  for (const ch of String(str)) {
+    const wide = WIDE[ch.toUpperCase()];
+    if (wide) {
+      for (let i = 0; i < 25; i++) if (wide[i] === '1') g.fillRect(cx + (i % 5) * s, y + Math.floor(i / 5) * s, s, s);
+      cx += 6 * s; continue;
+    }
+    const gl = FONT[ch] ?? FONT[ch.toUpperCase()] ?? FONT['?'];
+    for (let i = 0; i < 15; i++) if (gl[i] === '1') g.fillRect(cx + (i % 3) * s, y + Math.floor(i / 3) * s, s, s);
+    cx += 4 * s;
+  }
+}
+const textW = (str, s = 1) => [...String(str)].reduce((w, ch) => w + (WIDE[ch.toUpperCase()] ? 6 : 4) * s, 0) - s;
+const fitText = (str, max) => { let t = String(str); while (t.length > 1 && textW(t) > max) t = t.slice(0, -1); return t; };
+function textC(g, str, cx, y, color, s = 1, shadow = '#0D1814') {
+  const x = Math.round(cx - textW(str, s) / 2);
+  if (shadow) drawText(g, str, x + s, y + s, shadow, s);
+  drawText(g, str, x, y, color, s);
+}
+
+/* =====================================================================
+   STORE — the shared roster (artifact db) or this device (localStorage)
+   ===================================================================== */
+const LS_KEY = 'rerat-v1';
+const S = {
+  mode: 'loading', db: null, user: null, uid: null, canWrite: false,
+  docs: {}, seasons: {}, computed: {}, names: {}, loaded: false, seasonsLoaded: false, note: '',
+};
+const validPx = px => !px || (typeof px === 'object' && typeof px.p === 'string' && px.p.length <= 600 && /^~?[0-9a-f]{6}(,~?[0-9a-f]{6})*$/.test(px.p)
+  && typeof px.d === 'string' && /^[.0-9a-zA-Z]{324}$/.test(px.d));
+function validAgent(a) {
+  return a && typeof a.id === 'string' && /^[a-z0-9]{6,24}$/.test(a.id) && B.validAgentShape(a) && validPx(a.px)
+    && typeof a.name === 'string' && a.name.length <= 14 && Array.isArray(a.log) && a.log.length <= 80
+    && a.log.every(e => Array.isArray(e) && Number.isFinite(e[0]) && (e[1] === 0 || e[1] === 1));
+}
+function roster() {
+  const out = [], seen = new Set();
+  for (const [uid, list] of Object.entries(S.docs)) {
+    for (const a of (list || []).slice(0, 3)) {
+      if (!validAgent(a) || seen.has(a.id)) continue;
+      seen.add(a.id);
+      const real = Number.isInteger(a.token) && a.token > 0;
+      out.push({ id: a.id, look: real ? -1 : a.look, token: real ? a.token : undefined, style: real ? a.style : undefined, type: real ? a.type : undefined, px: real ? a.px || null : undefined,
+        name: cleanName(a.name) || (real ? '#' + a.token : B.LOOKS[a.look].name), log: a.log.slice().sort((x, y) => x[0] - y[0]), owner: uid });
+    }
+  }
+  return out;
+}
+const myList = () => (S.docs[S.uid] || []).filter(validAgent);
+const isMine = id => !!S.uid && myList().some(a => a.id === id);
+function cleanName(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9 .'\-#]/g, '').replace(/\s+/g, ' ').trim().slice(0, 12); }
+
+function loadLocal() {
+  const d = store.get(LS_KEY, {});
+  S.mode = 'local'; S.uid = 'local'; S.canWrite = true; S.loaded = true;
+  S.docs = { local: Array.isArray(d.list) ? d.list : [] };
+  S.seasons = d.seasons && typeof d.seasons === 'object' ? d.seasons : {};
+  S.seasonsLoaded = true;
+}
+function saveLocal() { store.set(LS_KEY, { list: S.docs.local || [], seasons: S.seasons }); }
+
+let writeQ = Promise.resolve();
+function saveMine(list) {
+  S.docs = { ...S.docs, [S.uid]: list };
+  schedule();
+  if (S.mode === 'local') { saveLocal(); return; }
+  const body = { list, v: 1 };
+  writeQ = writeQ.then(() => S.db.doc('agents/' + S.uid).set(body)).catch(e => {
+    const code = e && e.code;
+    if (code === 'invalid_argument' || code === 'not_granted') { S.canWrite = false; toast("This view can watch, but can't send fighters in."); renderEnter(); }
+    else if (code === 'quota_exceeded') toast('The room is full: the roster store is at capacity.');
+    else toast("Couldn't reach the roster. Try again in a moment.");
+  });
+}
+async function writeSeason(id, data) {
+  if (S.mode === 'site') { if (W8.session) api('/season', { method: 'POST', body: { id, data }, auth: true }).catch(() => {}); return; }
+  if (S.mode === 'local') { S.seasons[id] = data; saveLocal(); return; }
+  if (S.mode !== 'shared' || !S.canWrite) return;
+  const ref = S.db.doc('seasons/' + id);
+  try {
+    const lease = await ref.acquire({ holder: S.uid, ttlMs: 15000 });
+    if (!lease.acquired) return;
+    const cur = await ref.get();
+    if (cur.exists) return;
+    await ref.set(data);
+  } catch {}
+}
+async function initShared() {
+  if (!window.claude || typeof window.claude.use !== 'function') return false;
+  let db = null, user = null;
+  try { [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]); } catch {}
+  if (!db) return false;
+  S.db = db; S.user = user;
+  try { S.uid = user ? await user.id() : null; } catch { S.uid = null; }
+  let can = null;
+  try { can = user ? await user.can('data.write') : null; } catch {}
+  S.canWrite = !!S.uid && can !== false;
+  S.mode = 'shared';
+  const timer = setTimeout(() => { if (!S.loaded) { S.note = "The roster can't be reached yet. Showing the house for now."; renderAll(); } }, 10000);
+  db.collection('agents').onSnapshot(snap => {
+    const d = {};
+    for (const doc of snap.docs) { const v = doc.data(); if (v && Array.isArray(v.list)) d[doc.id] = v.list; }
+    // keep my own unconfirmed write if the store hasn't caught up
+    S.docs = d; S.loaded = true; S.note = ''; clearTimeout(timer);
+    resolveNames(); schedule();
+  }, () => { clearTimeout(timer); S.note = "Lost the roster. Showing what was here."; renderAll(); });
+  db.collection('seasons').onSnapshot(snap => {
+    const s = {};
+    for (const doc of snap.docs) { const v = doc.data(); if (v && v.xp && typeof v.xp === 'object') s[doc.id] = v; }
+    S.seasons = s; S.seasonsLoaded = true; schedule();
+  }, () => { S.seasonsLoaded = true; schedule(); });
+  return true;
+}
+async function resolveNames() {
+  if (!S.user || typeof S.user.profiles !== 'function') return;
+  const ids = Object.keys(S.docs).filter(id => !(id in S.names));
+  if (!ids.length) return;
+  try {
+    const ps = await S.user.profiles(ids);
+    for (const id of ids) S.names[id] = (ps && ps[id] && ps[id].name) || '';
+    renderBoard(); if (sheetId) openSheet(sheetId);
+  } catch {}
+}
+const ownerName = uid => uid === 'local' ? 'you' : uid === S.uid ? 'you' : (S.names[uid] || 'someone');
+
+/* =====================================================================
+   SIM MANAGER — every viewer computes the same arena
+   ===================================================================== */
+const M = { W: null, Wmain: null, after: false, w: null, bell: 0 };
+function allSeasons() { return { ...S.computed, ...S.seasons }; }
+function careerXp(beforeW) {
+  const xp = {};
+  for (const [id, s] of Object.entries(allSeasons())) {
+    if (!/^\d{4}-\d\d-\d\d$/.test(id) || !s || !s.xp) continue;
+    if (B.weekFromId(id) >= beforeW) continue;
+    for (const [a, v] of Object.entries(s.xp)) if (Number.isFinite(v)) xp[a] = (xp[a] || 0) + Math.max(0, Math.min(5000, v));
+  }
+  return xp;
+}
+function boothWeeks(id) { let n = 0; for (const s of Object.values(allSeasons())) if (s && Array.isArray(s.booth) && s.booth.includes(id)) n++; return n; }
+// settle the last few weeks if nobody has written them yet
+function ensureSettled(w, r) {
+  for (let pw = w - 3; pw < w; pw++) {
+    const id = B.weekId(pw);
+    if (allSeasons()[id]) continue;
+    if (!r.some(a => B.firstOn(a) < B.weekClose(pw))) continue;
+    const Wp = new Rat.RatWeek(pw, r, careerXp(pw), { tapeKeep: 0 });
+    Wp.advanceTo(B.ROUNDS);
+    S.computed[id] = Wp.settle();
+    writeSeason(id, S.computed[id]);
+  }
+}
+function recompute() {
+  const t = now(), w = B.weekIndex(t), after = t >= B.weekClose(w);
+  const r = roster();
+  if (S.seasonsLoaded) ensureSettled(w, r);
+  const xp = careerXp(w);
+  const Wmain = new Rat.RatWeek(w, r, xp), sid = B.weekId(w);
+  Wmain.advanceTo(after ? B.ROUNDS : Wmain.rung(t));
+  let W = Wmain;
+  if (after) {
+    const st = Wmain.settle();
+    if (S.seasonsLoaded && !allSeasons()[sid] && Object.keys(st.xp).length) { S.computed[sid] = st; writeSeason(sid, st); }
+    const xp2 = { ...xp }; for (const [k, v] of Object.entries(st.xp)) xp2[k] = (xp2[k] || 0) + v;
+    W = new Rat.RatWeek(w, r, xp2, { after: true });
+    W.advanceTo(W.rung(t));
+  }
+  Object.assign(M, { W, Wmain, after, w, bell: W.round });
+}
+let schedT = 0;
+function schedule() { clearTimeout(schedT); schedT = setTimeout(() => { recompute(); renderAll(); if (!PB.bout) autoPick(); }, 120); }
+function tick() {
+  if (!M.W) return;
+  const t = now(), w = B.weekIndex(t), after = t >= B.weekClose(w);
+  if (w !== M.w || after !== M.after) { recompute(); renderAll(); return; }
+  const n = M.W.rung(t);
+  if (n > M.W.round) {
+    M.W.advanceTo(n); M.bell = M.W.round;
+    renderWatchList(); renderBoard(); renderEnter(); if (sheetId) openSheet(sheetId);
+    if (PB.phase === 'idle') autoPick();
+  }
+  renderChip();
+}
+
+/* =====================================================================
+   STAGE — the table in the back room
+   ===================================================================== */
+const cv = $('#stage'), g = cv.getContext('2d');
+const SW = 240, SH = 135, TCX = 120, TCY = 104, TRX = 106, TRY = 22;
+const PAL = { ink: '#0D1814', ink2: '#15251E', ink3: '#21362C', paper: '#F1F5EE', mist: '#9CC4B4', sage: '#639685', deep: '#557F71', gold: '#FFC531', ember: '#FF8A3D', red: '#ff3b3b', night: '#0a1220' };
+const HOOD = rgb('#323232'), HOOD_D = HOOD.map(v => v * .75), HOOD_L = rgb('#4b4b4b');
+function brickPx(x, y) {
+  const bx = x % 8, by = y % 8, odd = Math.floor(y / 8) % 2, row = by < 4 ? 0 : 1;
+  const joint = (odd ^ row) ? 1 : 5;
+  if (by === 3 || by === 7 || bx === joint) return grainy(HOOD_D, x % 16, y, 7);
+  if (by === 0 || by === 4) return HOOD_L;
+  return grainy(HOOD, x, y, 2);
+}
+const FELT = rgb('#639685'), FELT_D = rgb('#557F71'), WOOD = rgb('#3a2a1c'), WOOD_L = rgb('#5a4129');
+const SKY = rgb('#3f6157'), SKY_B = rgb('#557F71'), CITY = rgb('#2c4840');
+const inEll = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+const WALL = (() => {
+  const R = B.rng(77), city = [];
+  for (let x = 0; x < 48;) { const w = 4 + Math.floor(R() * 7), h = 6 + Math.floor(R() * 16); city.push([x, w, h]); x += w + 1; }
+  const c = paint(SW, SH, (x, y) => {
+    if (x >= 8 && x < 58 && y >= 6 && y < 42) {
+      if (x < 10 || x >= 56 || y < 8 || y >= 40 || x === 32 || x === 33 || y === 23) return rgb('#191919');
+      const lx = x - 10, ly = y - 8;
+      for (const [bx, bw, bh] of city) if (lx >= bx && lx < bx + bw && ly >= 32 - bh) {
+        if ((lx - bx) % 3 === 1 && ly % 4 === 1 && (lx * 7 + ly * 3) % 5 === 0) return rgb('#FFC531').map(v => v * .7);
+        return grainy(CITY, x, y, 3);
+      }
+      return grainy(y < 23 ? SKY : SKY_B, x, y, 1);
+    }
+    return brickPx(x, y);
+  });
+  const k = c.getContext('2d');
+  k.fillStyle = PAL.ink2; k.fillRect(172, 6, 62, 18); k.fillStyle = PAL.ink; k.fillRect(172, 24, 62, 1);
+  return c;
+})();
+const TABLE = paint(SW, SH, (x, y) => {
+  if (inEll(x, y, TCX, TCY, TRX - 3, TRY - 2)) {
+    const edge = !inEll(x, y, TCX, TCY, TRX - 9, TRY - 6);
+    return grainy(edge ? FELT_D : FELT, x, y, 9);
+  }
+  if (inEll(x, y, TCX, TCY, TRX, TRY)) return grainy(y < TCY ? WOOD_L : WOOD, x, y, 6);
+  if (y > TCY && Math.abs(x - TCX) < TRX && inEll(x, Math.min(y, TCY + TRY), TCX, TCY, TRX, TRY + 30)) return grainy(WOOD.map(v => v * .7), x, y, 5);   // table skirt
+  return null;
+});
+const RAIN = Array.from({ length: 22 }, (_, i) => ({ x: 10 + (i * 17) % 46, y: (i * 29) % 32, s: 26 + (i * 13) % 25 }));
+const SIGN = "DeSTEFANO'S";
+// where each chair sits on the far side of the table
+// each re:gen sits just behind the far edge of the table, so the felt hides its chest
+const tableEdge = x => TCY - TRY * Math.sqrt(Math.max(0, 1 - ((x - TCX) / TRX) ** 2));
+function seatPos(k, n) {
+  const u = (k + .5) / n, lift = Math.sin(Math.PI * u);
+  const x = Math.round(TCX + (u - .5) * 2 * 92);
+  return { x, base: Math.round(tableEdge(x) + 5), depth: lift };
+}
+// little rat ears and whiskers, drawn over a bust when the rat is unmasked
+function ratMask(x, top) {
+  g.fillStyle = '#8a8a8a'; g.fillRect(x - 14, top - 2, 7, 7); g.fillRect(x + 7, top - 2, 7, 7);
+  g.fillStyle = '#ffb3c1'; g.fillRect(x - 12, top, 3, 3); g.fillRect(x + 9, top, 3, 3);
+  g.fillStyle = PAL.paper; for (const dy of [22, 25]) { g.fillRect(x - 16, top + dy, 8, 1); g.fillRect(x + 8, top + dy, 8, 1); }
+}
+
+/* ---------- playback ---------- */
+const PB = {
+  bout: null, W: null, F: [], phase: 'idle', clock: 0, cursor: 0, nextAt: 0,
+  alive: [], heat: [], reveal: {}, speaker: -1, target: -1, mode: '', modeUntil: 0, noticed: [],
+  vote: null, night: null, banner: null, hunch: -1, speed: 1, playing: true, auto: true, watched: new Set(), log: [], dealtAt: 0,
+};
+const gameKey = (W, gm) => W.id + ':' + gm.r + ':' + gm.i;
+const DUR = { deal: 2200, day: 1600, tip: 1800, say: 2200, probe: 1300, wrap: 2000, night: 2800, end: 4800 };
+function play(W, gm) {
+  if (!gm || !gm.events) return false;
+  Object.assign(PB, { W, bout: gm, F: gm.ids.map(id => W.F.get(id)), phase: 'play', cursor: 0, nextAt: PB.clock,
+    alive: gm.ids.map(() => true), heat: gm.ids.map(() => 0), reveal: {}, speaker: -1, target: -1, mode: '', noticed: [],
+    vote: null, night: null, banner: null, hunch: -1, log: [], dealtAt: PB.clock, playing: true });
+  syncPlayBtn(); $('#log').innerHTML = '';
+  renderWatchList();
+  return true;
+}
+const nameOf = i => PB.F[i] ? PB.F[i].name : '?';
+const nm = i => `<b>${esc(nameOf(i))}</b>`;
+const pickLine = (arr, seed) => arr[B.hash(String(seed)) % arr.length];
+function say(html, cls = '', who = -1) {
+  $('#call').innerHTML = html;
+  const li = document.createElement('div');
+  li.className = 'line ' + cls;
+  li.innerHTML = (who >= 0 && PB.F[who] ? img(PB.F[who], 22) : '<span class="dot"></span>') + `<div>${html}</div>`;
+  const box = $('#log'); box.appendChild(li);
+  box.scrollTop = box.scrollHeight;
+}
+function lineFor(e) {
+  const A = e.by, T = e.on, seed = PB.bout.r + ':' + PB.bout.i + ':' + PB.cursor;
+  switch (e.kind) {
+    case 'accuse': return pickLine([`${nm(A)}: "${esc(nameOf(T))} has been sweating since they sat down."`, `${nm(A)} points at ${nm(T)}. "It's you."`, `${nm(A)}: "Watch ${esc(nameOf(T))}'s hands. That's all I'm saying."`, `${nm(A)}: "${esc(nameOf(T))} hasn't looked anybody in the eye all night."`], seed);
+    case 'tipaccuse': return pickLine([`${nm(A)}: "I saw ${esc(nameOf(T))} by the back door last night."`, `${nm(A)}: "${esc(nameOf(T))} was on the phone in the alley. I heard it."`], seed);
+    case 'share': return `${nm(A)}: "Word is ${esc(nameOf(T))} was out back. Just saying."`;
+    case 'vouch': return pickLine([`${nm(A)}: "${esc(nameOf(T))} is clean. I'd bet on it."`, `${nm(A)}: "Leave ${esc(nameOf(T))} out of it."`], seed);
+    case 'defend': return pickLine([`${nm(A)}: "It's not me. Look somewhere else."`, `${nm(A)}: "I've been at this table since the doors opened. Ask anyone."`], seed);
+    case 'deflect': return `${nm(A)} turns it around: "Funny, ${esc(nameOf(T))}. You're the one asking."`;
+    case 'counter': return `${nm(A)} fires back at ${nm(T)}: "You're the one lying."`;
+    case 'probe': return `${nm(A)}: "My read says ${esc(nameOf(T))} is dirty."`;
+    case 'clear': return `${nm(A)}: "My read says ${esc(nameOf(T))} is clean."`;
+    default: return pickLine([`${nm(A)} keeps quiet and watches.`, `${nm(A)} lights a cigarette. Says nothing.`, `${nm(A)} stirs a drink. "Hmm."`], seed);
+  }
+}
+const KIND_UI = {
+  accuse: ['!', PAL.red], tipaccuse: ['!', PAL.red], deflect: ['!', PAL.red], counter: ['!', PAL.red], probe: ['!', PAL.red],
+  share: ['*', PAL.gold], tip: ['*', PAL.gold], vouch: ['OK', PAL.mist], clear: ['OK', PAL.mist], defend: ['NO', PAL.paper],
+  hmm: ['...', '#9aa'], wrap: ['~', PAL.mist], peek: ['?', PAL.gold],
+};
+function focus(by, on, mode, dur) { PB.speaker = by; PB.target = on; PB.mode = mode; PB.modeUntil = PB.clock + dur * .9; }
+function apply(e) {
+  const gm = PB.bout;
+  if (e.heat) PB.heat = e.heat.slice();
+  switch (e.k) {
+    case 'deal':
+      say(`${PB.W.after ? 'Exhibition' : 'Bell ' + (gm.r + 1)}. ${e.n} at the table. One of them is a rat. <span class="muted">Tap a face to call your hunch.</span>`, 'sys');
+      return DUR.deal;
+    case 'day':
+      PB.alive = e.alive.slice(); PB.vote = null; PB.night = null;
+      say(e.d === 1 ? 'Day one. Nobody trusts anybody yet.' : `Day ${e.d}. ${e.alive.filter(Boolean).length} left at the table.`, 'sys');
+      return DUR.day;
+    case 'tip':
+      focus(e.by, e.on, 'tip', DUR.tip);
+      say(`<i>${nm(e.by)} got a tip: somebody saw ${nm(e.on)} by the back door.</i>`, 'tip', e.by);
+      return DUR.tip;
+    case 'probe':
+      focus(e.by, e.on, 'peek', DUR.probe);
+      say(`<i>${nm(e.by)} probes ${nm(e.on)}…</i>`, 'tip', e.by);
+      return DUR.probe;
+    case 'wrap':
+      focus(e.by, e.on, 'wrap', DUR.wrap);
+      say(`${nm(e.by)} wraps ${nm(e.on)} up tight. No talking for a day.`, '', e.by);
+      return DUR.wrap;
+    case 'say': {
+      focus(e.by, e.on, e.kind, DUR.say);
+      let html = lineFor(e);
+      if (e.noticed && e.noticed.length) html += ` <span class="muted">${e.noticed.slice(0, 2).map(nm).join(' and ')} caught a tell.</span>`;
+      PB.noticed = e.noticed || [];
+      say(html, '', e.by);
+      return DUR.say;
+    }
+    case 'vote': {
+      const nv = e.votes.length;
+      PB.speaker = -1; PB.target = -1; PB.mode = '';
+      PB.vote = { at: PB.clock, votes: e.votes, out: e.out, step: 230 };
+      const outAt = 500 + nv * 230;
+      say('The vote. Hands up.', 'sys');
+      setTimeoutClock(outAt, () => {
+        if (e.out < 0) { say('Split table. Nobody goes out back.', 'sys'); return; }
+        PB.alive[e.out] = false;
+        const rat = e.out === gm.rat;
+        PB.reveal[e.out] = rat ? 'rat' : 'clean';
+        const v = e.tally[e.out], n = v % 1 ? Math.floor(v) + '½' : v;
+        say(rat ? `${nm(e.out)} goes out back with ${n} votes… and squeaks. <b class="red">That was the rat.</b>` : `${nm(e.out)} goes out back with ${n} votes. <span class="muted">Clean. Wrong call.</span>`, rat ? 'big' : 'sys', e.out);
+      });
+      return outAt + 2300;
+    }
+    case 'night':
+      PB.vote = null; PB.speaker = -1; PB.target = -1;
+      PB.night = { at: PB.clock, on: e.on, back: e.back };
+      say('Lights out.', 'sys');
+      setTimeoutClock(1500, () => {
+        if (e.back) say(`${nm(e.on)} got taken out back… and walked right back in.`, '', e.on);
+        else { PB.alive[e.on] = false; PB.reveal[e.on] = 'clean'; say(`${nm(e.on)} got taken out back. Clean, for what it's worth.`, '', e.on); }
+      });
+      return DUR.night;
+    case 'end': {
+      PB.vote = null; PB.night = null; PB.speaker = -1;
+      PB.reveal[gm.rat] = 'rat';
+      PB.banner = { at: PB.clock, town: e.winner === 'town' };
+      say(e.winner === 'town' ? `The table caught the rat in ${gm.days === 1 ? 'one day' : gm.days + ' days'}.${e.firstCall >= 0 ? ` ${nm(e.firstCall)} called it first.` : ''}` : `${nm(gm.rat)} was the rat. Nobody caught it. It walks out with the pot.`, 'big', gm.rat);
+      if (PB.hunch >= 0) toast(PB.hunch === gm.rat ? 'Your hunch was right. Good eye.' : `Your hunch was wrong. It was ${nameOf(gm.rat)}.`);
+      PB.phase = 'end';
+      PB.watched.add(gameKey(PB.W, gm)); renderWatchList();
+      return DUR.end;
+    }
+  }
+  return 1000;
+}
+const clockTimers = [];
+function setTimeoutClock(ms, fn) { clockTimers.push({ at: PB.clock + ms, fn }); clockTimers.sort((a, b) => a.at - b.at); }
+function update(dt) {
+  if (!PB.playing) return;
+  PB.clock += dt * PB.speed;
+  while (clockTimers.length && clockTimers[0].at <= PB.clock) clockTimers.shift().fn();
+  if (!PB.bout || PB.phase === 'idle') return;
+  if (PB.clock >= PB.nextAt) {
+    const evs = PB.bout.events;
+    if (PB.cursor >= evs.length) { if (PB.auto) nextBout(); else PB.phase = 'idle-end'; return; }
+    const e = evs[PB.cursor];
+    const d = apply(e);
+    PB.cursor++;
+    PB.nextAt = PB.clock + d;
+  }
+}
+function skipToEnd() {
+  if (!PB.bout) return;
+  clockTimers.length = 0;
+  const evs = PB.bout.events, gm = PB.bout;
+  PB.alive = gm.alive.slice();
+  for (const e of evs) { if (e.k === 'vote' && e.out >= 0) PB.reveal[e.out] = e.out === gm.rat ? 'rat' : 'clean'; if (e.k === 'night' && !e.back) PB.reveal[e.on] = 'clean'; }
+  PB.cursor = evs.length - 1; PB.nextAt = PB.clock;
+}
+function nextBout(dir = 1) {
+  const list = watchList(); if (!list.length) return;
+  const i = list.findIndex(x => x.g === PB.bout);
+  const j = i + dir;
+  if (j >= list.length) { PB.phase = 'idle'; PB.bout = null; $('#call').innerHTML = waitLine(); renderWatchList(); return; }
+  const k = Math.max(0, j);
+  play(list[k].W, list[k].g);
+}
+function watchList() {
+  const out = [];
+  if (!M.W) return out;
+  for (const r of [...M.W.rounds].reverse()) for (const gm of r.tables) if (gm.events) out.push({ W: M.W, g: gm, r: r.r });
+  return out;
+}
+function autoPick() {
+  if (!M.W) return;
+  const list = watchList();
+  if (!list.length) { PB.phase = 'idle'; $('#call').innerHTML = waitLine(); return; }
+  const latest = list.filter(x => x.r === list[0].r);
+  const mine = latest.find(x => x.g.ids.some(isMine) && !PB.watched.has(gameKey(x.W, x.g)));
+  const fresh = latest.find(x => !PB.watched.has(gameKey(x.W, x.g)));
+  const pick = mine || fresh || latest[0];
+  play(pick.W, pick.g);
+}
+function waitLine() {
+  if (!M.W) return 're:loading';
+  const nb = M.W.nextBell(now());
+  if (!nb) return M.after ? 'After hours are over. Doors open soon.' : 'The last bell has rung.';
+  return `Every table's done for this bell. The next deal is at <b>${fmtClock(nb)}</b>. Pick any table below to rewatch it.`;
+}
+
+/* ---------- drawing ---------- */
+function draw(t) {
+  g.imageSmoothingEnabled = false;
+  g.drawImage(WALL, 0, 0);
+  g.fillStyle = 'rgba(156,196,180,.55)';
+  for (const r of RAIN) { const y = 8 + ((r.y + t / 1000 * r.s) % 32); g.fillRect(r.x, Math.floor(y), 1, 2); }
+  const flick = (Math.floor(t / 90) % 53 === 0) || (Math.floor(t / 70) % 97 === 3);
+  if (!flick) { g.fillStyle = 'rgba(255,59,59,.12)'; g.fillRect(173, 7, 60, 16); textC(g, SIGN, 203, 8, PAL.red, 1, '#5c0000'); }
+  else textC(g, SIGN, 203, 8, '#5c1d1d', 1, null);
+  textC(g, 'BACK ROOM', 203, 16, PAL.gold, 1, null);
+  // lamp over the table
+  g.fillStyle = '#191919'; g.fillRect(TCX, 0, 1, 14);
+  g.fillStyle = '#2b443a'; g.fillRect(TCX - 8, 14, 17, 3); g.fillRect(TCX - 6, 12, 13, 2);
+  g.fillStyle = '#ffe9a8'; g.fillRect(TCX - 2, 17, 5, 2);
+  const gm = PB.bout;
+  if (!gm) {
+    g.drawImage(TABLE, 0, 0);
+    g.fillStyle = 'rgba(13,24,20,.85)'; g.fillRect(0, 50, SW, 24);
+    textC(g, M.W ? (M.W.rounds.length ? 'BETWEEN DEALS' : 'WAITING FOR THE FIRST BELL') : 're:LOADING', SW / 2, 54, PAL.gold, 1, null);
+    if (M.W) { const nb = M.W.nextBell(now()); if (nb) textC(g, 'NEXT DEAL IN ' + fmtLeft(nb - now()).toUpperCase(), SW / 2, 63, PAL.paper, 1, null); }
+    return;
+  }
+  const n = PB.F.length, active = PB.clock < PB.modeUntil;
+  // light cone
+  g.fillStyle = 'rgba(255,233,168,.06)'; g.beginPath(); g.moveTo(TCX, 18); g.lineTo(10, SH); g.lineTo(230, SH); g.closePath(); g.fill();
+  // seats, far ones first
+  const order = [...Array(n).keys()].sort((a, b) => seatPos(b, n).depth - seatPos(a, n).depth);
+  for (const k of order) {
+    const p = seatPos(k, n), f = PB.F[k];
+    const top = p.base - 36;
+    if (!PB.alive[k] && !(PB.vote && PB.vote.out === k && PB.clock - PB.vote.at < 500 + PB.vote.votes.length * 230 + 900)) {
+      // empty chair
+      g.fillStyle = '#2a1f17'; g.fillRect(p.x - 10, p.base - 26, 20, 26); g.fillStyle = '#3a2a1c'; g.fillRect(p.x - 8, p.base - 24, 16, 4);
+      if (PB.reveal[k] === 'clean') textC(g, 'CLEAN', p.x, p.base - 34, PAL.mist, 1, PAL.ink);
+      continue;
+    }
+    let dy = 0;
+    if (active && PB.speaker === k) dy = -2 - (Math.floor(t / 160) % 2);
+    if (PB.vote && PB.vote.out === k) { const e = PB.clock - PB.vote.at - (500 + PB.vote.votes.length * 230); if (e > 0) dy = Math.min(30, e / 20); }
+    const dim = PB.night && PB.night.on === k && PB.clock - PB.night.at > 900;
+    g.save();
+    g.beginPath(); g.rect(0, 0, SW, p.base + 4); g.clip();
+    g.drawImage(sprite(f, false, dim ? 'dim' : 'n'), p.x - 18, top + dy, 36, 36);
+    g.restore();
+    if (PB.reveal[k] === 'rat') ratMask(p.x, top + dy);
+  }
+  g.drawImage(TABLE, 0, 0);
+  // plaques with name and heat
+  for (let k = 0; k < n; k++) {
+    const p = seatPos(k, n), f = PB.F[k];
+    const y = 110 + (k % 2) * 10, nmx = fitText(f.name.replace(/#/g, '').trim(), 26);
+    const w = Math.max(textW(nmx) + 4, 14);
+    const mine = isMine(f.id);
+    g.fillStyle = mine ? PAL.gold : PAL.ink; g.fillRect(p.x - w / 2 - 1, y - 1, w + 2, 10);
+    g.fillStyle = PB.alive[k] ? PAL.ink2 : PAL.ink; g.fillRect(p.x - w / 2, y, w, 8);
+    drawText(g, nmx, Math.round(p.x - textW(nmx) / 2), y + 1, PB.reveal[k] === 'rat' ? PAL.red : PB.alive[k] ? PAL.paper : '#556');
+    if (PB.alive[k]) { const hw = Math.round(Math.min(1, Math.max(0, PB.heat[k] || 0) / 2.5) * w); g.fillStyle = PAL.ember; g.fillRect(p.x - w / 2, y + 7, hw, 1); }
+
+  }
+  // who's talking about whom
+  if (active && PB.speaker >= 0) {
+    const a = seatPos(PB.speaker, n), [icon, col] = KIND_UI[PB.mode] || ['...', '#9aa'];
+    const ay = a.base - 44;
+    if (PB.target >= 0 && PB.target !== PB.speaker && PB.mode !== 'hmm' && PB.mode !== 'defend') {
+      const b = seatPos(PB.target, n), by = b.base - 40;
+      const mx = (a.x + b.x) / 2, my = Math.min(ay, by) - 16;
+      g.fillStyle = col;
+      for (let s = 0; s <= 1; s += 1 / 40) {      // a dotted arc from speaker to target
+        if (Math.floor(s * 40) % 2) continue;
+        const x = (1 - s) ** 2 * a.x + 2 * (1 - s) * s * mx + s * s * b.x, y = (1 - s) ** 2 * ay + 2 * (1 - s) * s * my + s * s * by;
+        g.fillRect(Math.round(x), Math.round(y), 1, 1);
+      }
+      g.fillRect(b.x - 1, by - 2, 3, 3);
+    }
+    const bw = textW(icon) + 6;
+    g.fillStyle = PAL.ink; g.fillRect(a.x - bw / 2 - 1, ay - 9, bw + 2, 10);
+    g.fillStyle = PAL.paper; g.fillRect(a.x - bw / 2, ay - 8, bw, 8); g.fillRect(a.x - 1, ay, 3, 2);
+    drawText(g, icon, Math.round(a.x - textW(icon) / 2), ay - 7, col === PAL.paper ? PAL.ink : col);
+    for (const L of PB.noticed) if (PB.mode !== 'tip') { const q = seatPos(L, n); textC(g, '!?', q.x, q.base - 44, PAL.gold, 1, PAL.ink); }
+  }
+  // the vote
+  if (PB.vote) {
+    const v = PB.vote, shown = Math.floor((PB.clock - v.at - 300) / v.step), tally = new Array(n).fill(0);
+    v.votes.forEach(([by, on, w], i) => {
+      if (i > shown) return;
+      const a = seatPos(by, n);
+      if (on < 0) { textC(g, '-', a.x, a.base - 44, '#9aa', 1, PAL.ink); return; }
+      tally[on] += w;
+      const b = seatPos(on, n);
+      g.fillStyle = 'rgba(255,59,59,.55)';
+      const steps = 24;
+      for (let s = 0; s <= steps; s++) { const x = a.x + (b.x - a.x) * s / steps, y = a.base - 40 + Math.sin(Math.PI * s / steps) * -10; if (s % 2 === 0) g.fillRect(Math.round(x), Math.round(y), 1, 1); }
+    });
+    tally.forEach((c, k) => { if (c > 0) { const p = seatPos(k, n); textC(g, String(c), p.x, p.base - 48, PAL.red, 2, PAL.ink); } });
+  }
+  // night
+  if (PB.night) {
+    const e = PB.clock - PB.night.at, a = Math.min(.82, e / 500);
+    g.fillStyle = `rgba(10,18,32,${a})`; g.fillRect(0, 0, SW, SH);
+    if (e > 600) { const p = seatPos(PB.night.on, n); g.fillStyle = 'rgba(255,233,168,.15)'; g.fillRect(p.x - 16, 0, 32, SH); }
+    textC(g, 'LIGHTS OUT', SW / 2, 30, PAL.mist, 2, null);
+  }
+  // hunch marker
+  if (PB.hunch >= 0 && PB.alive[PB.hunch]) { const p = seatPos(PB.hunch, n); g.fillStyle = PAL.gold; g.fillRect(p.x - 3, p.base - 39, 7, 1); textC(g, '?', p.x, p.base - 46, PAL.gold, 1, PAL.ink); }
+  // the ending
+  if (PB.banner) {
+    g.fillStyle = 'rgba(13,24,20,.85)'; g.fillRect(0, 44, SW, 22);
+    textC(g, PB.banner.town ? 'THE TABLE WINS' : 'THE RAT WALKS', SW / 2, 48, PB.banner.town ? PAL.mist : PAL.red, 2, null);
+  }
+  // header
+  g.fillStyle = 'rgba(13,24,20,.85)'; g.fillRect(0, 0, 58, 9);
+  drawText(g, PB.W.after ? 'EXHIBITION' : 'BELL ' + (gm.r + 1) + ' T' + (gm.i + 1), 2, 2, PAL.gold);
+  if (!PB.playing) { g.fillStyle = 'rgba(13,24,20,.5)'; g.fillRect(0, 0, SW, SH); textC(g, 'PAUSED', SW / 2, 60, PAL.paper, 2); }
+}
+// tap a face to call your hunch
+cv.addEventListener('click', e => {
+  if (!PB.bout) return autoPick();
+  const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * SW, y = (e.clientY - r.top) / r.height * SH;
+  const n = PB.F.length;
+  let hit = -1, best = 1e9;
+  for (let k = 0; k < n; k++) { const p = seatPos(k, n); const d = Math.abs(p.x - x) + (y < p.base - 40 || y > 128 ? 99 : 0); if (d < 16 && d < best) { best = d; hit = k; } }
+  if (hit >= 0 && PB.phase === 'play' && PB.alive[hit]) { PB.hunch = hit; toast(`Your hunch: ${nameOf(hit)}.`); return; }
+  PB.playing = !PB.playing; syncPlayBtn();
+});
+
+/* =====================================================================
+   WATCH UI
+   ===================================================================== */
+let bellView = null;
+function renderChip() {
+  const el = $('#chipText'), chip = $('#chip');
+  if (!M.W) { setHTML(el, 're:loading'); return; }
+  const t = now();
+  if (M.after) { chip.classList.add('off'); el.textContent = 'AFTER HOURS · OPENS ' + fmtTime(B.weekOpen(M.w + 1)).toUpperCase(); }
+  else { chip.classList.remove('off'); el.textContent = `LIVE · BELL ${M.W.round}/${B.ROUNDS}`; }
+  const nb = M.W.nextBell(t);
+  $('#floorSub').textContent = nb ? 'next deal in ' + fmtLeft(nb - t) : '';
+}
+function renderWatchList() {
+  const W = M.W; if (!W) return;
+  const tapes = W.rounds.slice(-B.TAPE_ROUNDS).reverse();
+  if (bellView === null || !tapes.some(r => r.r === bellView)) bellView = tapes[0] ? tapes[0].r : null;
+  $('#floorTitle').textContent = W.after ? 'After hours' : 'Tonight\'s tables';
+  $('#bellTabs').innerHTML = tapes.map((r, k) => `<button class="mono ${r.r === bellView ? 'on' : ''}" data-bell="${r.r}">${W.after ? 'EXHIB ' + (r.r + 1) : 'BELL ' + (r.r + 1)}${k === 0 ? ' · LIVE' : ''}</button>`).join('');
+  const r = W.rounds[bellView];
+  if (!r) { $('#bouts').innerHTML = `<div class="note">The first bell hasn't rung yet.</div>`; return; }
+  const order = r.tables.slice().sort((a, b) => b.ids.some(isMine) - a.ids.some(isMine));
+  setHTML($('#bouts'), order.map(gm => {
+    const seen = PB.watched.has(gameKey(W, gm)) || (r.r < W.round - 1 && PB.bout !== gm);
+    const now_ = PB.bout === gm, mine = gm.ids.some(isMine);
+    const faces = gm.ids.map((id, k) => { const f = W.F.get(id); return `<span class="face ${seen && k === gm.rat ? 'rat' : ''}">${img(f, 26)}</span>`; }).join('');
+    const res = now_ && !PB.watched.has(gameKey(W, gm)) ? '<span class="gold">WATCHING</span>' : seen ? (gm.winner === 'town' ? `<span class="muted">TABLE WINS · ${gm.days}D</span>` : `<span class="red">RAT WALKS</span>`) : '▶ WATCH';
+    return `<button class="table ${now_ ? 'now' : ''} ${mine ? 'mine' : ''}" data-table="${gm.i}">
+      <div class="tt"><span class="mono">TABLE ${gm.i + 1} · ${gm.n} SEATS</span><span class="mono">${res}</span></div><div class="faces">${faces}</div></button>`;
+  }).join('') || `<div class="note">Not enough at the table this bell.</div>`);
+  $('#floorNote').textContent = 'Faces at each table are dealt by the bell. The tape keeps the last 3 bells.';
+}
+$('#bellTabs').addEventListener('click', e => { const b = e.target.closest('[data-bell]'); if (!b) return; bellView = +b.dataset.bell; renderWatchList(); });
+$('#bouts').addEventListener('click', e => {
+  const el = e.target.closest('[data-table]'); if (!el) return;
+  play(M.W, M.W.rounds[bellView].tables[+el.dataset.table]); window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+function syncPlayBtn() { $('#bPlay').textContent = PB.playing ? '❚❚' : '►'; }
+$('#bPlay').onclick = () => { PB.playing = !PB.playing; syncPlayBtn(); if (!PB.bout) autoPick(); };
+$('#bNext').onclick = () => (PB.bout ? nextBout(1) : autoPick());
+$('#bPrev').onclick = () => (PB.bout ? nextBout(-1) : autoPick());
+$('#bSkip').onclick = () => skipToEnd();
+$('#bSpeed').onclick = () => { PB.speed = PB.speed === 1 ? 2 : PB.speed === 2 ? 4 : 1; $('#bSpeed').textContent = PB.speed + '×'; };
+$('#bAuto').onclick = () => { PB.auto = !PB.auto; $('#bAuto').classList.toggle('on', PB.auto); $('#bAuto').setAttribute('aria-pressed', PB.auto); };
+
+/* =====================================================================
+   DOSSIER — a mugshot file instead of a card
+   ===================================================================== */
+const DW = 64, DH = 88;
+const TIERS = [
+  { min: 1, frame: '#557F71' }, { min: 25, frame: '#9CC4B4' }, { min: 75, frame: '#FFC531' }, { min: 125, frame: 'rainbow' },
+];
+const VISOR = ['#fe0000', '#00ff97', '#01ffff', '#ffff01', '#ff9600'];
+const tierOf = lv => TIERS.filter(t => lv >= t.min).pop();
+const roleOf = f => Rat.ROLES[f.style] || Rat.ROLES.COUNTER;
+const knackOf = f => Rat.KNACKS[f.type] || Rat.KNACKS.human;
+const LINEUP = paint(48, 44, (x, y) => {
+  if (y % 6 === 5) return rgb('#7fa898');
+  return grainy(rgb('#9CC4B4'), x, y, 4);
+});
+function drawDossier(c, f) {
+  const tier = tierOf(f.level);
+  c.fillStyle = PAL.ink; c.fillRect(0, 0, DW, DH);
+  if (tier.frame === 'rainbow') for (let y = 1; y < DH - 1; y++) { c.fillStyle = VISOR[Math.floor(y / 5) % 5]; c.fillRect(1, y, DW - 2, 1); }
+  else { c.fillStyle = tier.frame; c.fillRect(1, 1, DW - 2, DH - 2); }
+  c.fillStyle = PAL.ink2; c.fillRect(3, 3, DW - 6, DH - 6);
+  // the lineup wall and its height marks
+  c.drawImage(LINEUP, 8, 6);
+  for (let k = 0; k < 7; k++) { c.fillStyle = '#557F71'; c.fillRect(8, 6 + k * 6 + 5, 3, 1); }
+  c.drawImage(sprite(f), 14, 12, 36, 36);
+  // placard
+  c.fillStyle = PAL.ink; c.fillRect(13, 41, 38, 10);
+  const id = f.token ? '#' + f.token : f.house ? 'HOUSE' : 'L' + f.level;
+  drawText(c, fitText(id, 34), 32 - Math.round(textW(fitText(id, 34)) / 2), 43, PAL.paper);
+  // file text
+  drawText(c, fitText(f.name.replace(/#/g, '').trim(), DW - 10), 5, 55, PAL.paper);
+  drawText(c, roleOf(f).label, 5, 62, PAL.mist);
+  drawText(c, fitText(knackOf(f).name, DW - 22), 5, 69, PAL.gold);
+  const lv = 'L' + f.level; drawText(c, lv, DW - 5 - textW(lv), 69, PAL.gold);
+  drawText(c, 're:INFORMANT', 5, 78, '#5a7369');
+}
+const dossierCache = new Map();
+function dossierImg(f, scale = 2, cls = '') {
+  const key = [f.id, f.look, f.token, f.name, f.level, f.style, f.type, !!f.art, scale].join('|');
+  let url = dossierCache.get(key);
+  if (!url) {
+    const c1 = makeCanvas(DW, DH); drawDossier(c1.getContext('2d'), f);
+    const c = makeCanvas(DW * scale, DH * scale), k = c.getContext('2d');
+    k.imageSmoothingEnabled = false; k.drawImage(c1, 0, 0, c.width, c.height);
+    url = c.toDataURL(); dossierCache.set(key, url);
+  }
+  return `<img class="px card-img ${cls}" src="${url}" width="${DW * scale}" height="${DH * scale}" alt="${esc(f.name)} file">`;
+}
+
+/* =====================================================================
+   BOARD
+   ===================================================================== */
+let boardFilter = 'all';
+function statusTag(f) {
+  const live = M.W.F.get(f.id) || f;
+  if (M.after && M.W !== M.Wmain) return live.seated ? '' : '<span class="tag">BENCHED</span>';
+  const st = M.W.status(live);
+  if (st === 'BENCHED') return '<span class="tag">BENCHED</span>';
+  if (st === 'QUEUED') return '<span class="tag">IN LINE</span>';
+  return '';
+}
+function renderBoard() {
+  const W = M.Wmain; if (!W) return;
+  const t = now(), st = W.standings(), n = W.boothSize();
+  $('#boardTitle').textContent = M.after ? 'Final board' : 'The board';
+  $('#boardSub').textContent = 'week of ' + new Date(B.weekOpen(M.w)).toLocaleDateString([], { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  const players = st.filter(f => !f.house).length;
+  $('#boardStats').innerHTML = `
+    <div class="stat"><span class="mono muted">${M.after ? 'Doors open' : 'Last bell'}</span><b>${M.after ? fmtLeft(B.weekOpen(M.w + 1) - t) : fmtLeft(B.weekClose(M.w) - t)}</b></div>
+    <div class="stat"><span class="mono muted">At the tables</span><b>${st.length}</b><span class="sub">${players} sent in · ${st.length - players} house</span></div>
+    <div class="stat"><span class="mono muted">Gold booth</span><b class="gold">Top ${n}</b><span class="sub">${st[n - 1] ? st[n - 1].px + ' PX to sit' : ''}</span></div>`;
+  const q = ($('#search').value || '').trim().toLowerCase();
+  let rows = st.map((f, i) => ({ f, i }));
+  if (boardFilter === 'mine') rows = rows.filter(x => isMine(x.f.id));
+  if (boardFilter === 'players') rows = rows.filter(x => !x.f.house);
+  if (q) rows = rows.filter(({ f }) => f.name.toLowerCase().includes(q) || (f.token ? 're:gen #' + f.token : B.LOOKS[f.look].name).toLowerCase().includes(q) || (f.owner && ownerName(f.owner).toLowerCase().includes(q)));
+  let html = '';
+  for (const { f, i } of rows) {
+    if (!q && boardFilter === 'all' && i === n) html += `<div class="booth mono">GOLD BOOTH ABOVE</div>`;
+    const who = f.house ? 'HOUSE' : 'by ' + esc(ownerName(f.owner));
+    html += `<button class="row ${isMine(f.id) ? 'mine' : ''}" data-id="${esc(f.id)}">
+      <span class="rk ${i < n ? 'gold' : ''}">${i + 1}</span>${img(f)}
+      <div style="min-width:0"><div class="nm">${esc(f.name)} ${statusTag(f)}</div><div class="sub">${roleOf(f).label} · L${f.level} · ${who}</div></div>
+      <div class="px">${f.px} PX<div class="sub">${f.w}-${f.l}${f.ratGames ? ' · rat ' + f.ratWins + '/' + f.ratGames : ''}</div></div></button>`;
+  }
+  const queue = (W.rounds[W.round - 1] || { queue: [] }).queue;
+  if (queue.length && boardFilter !== 'mine') html += `<div class="note">${queue.length} in line for a seat. The room holds ${B.MAX_SEATS}.</div>`;
+  setHTML($('#board'), html || `<div class="note">${boardFilter === 'mine' ? "You haven't sent anyone in this week." : 'Nobody matches that.'}</div>`);
+}
+$('#board').addEventListener('click', e => { const r = e.target.closest('[data-id]'); if (r) openSheet(r.dataset.id); });
+$('#boardSeg').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; boardFilter = b.dataset.f; $$('#boardSeg button').forEach(x => x.classList.toggle('on', x === b)); renderBoard(); });
+$('#search').addEventListener('input', () => renderBoard());
+
+/* =====================================================================
+   PROFILE — the file on a re:gen
+   ===================================================================== */
+let sheetId = null;
+function openSheet(id) {
+  const Wm = M.Wmain; if (!Wm) return;
+  let f = Wm.F.get(id) || M.W.F.get(id);
+  if (!f) {
+    const a = roster().find(x => x.id === id); if (!a) return;
+    f = Rat.buildPlayer(a, B.levelFromXp(careerXp(M.w)[a.id] || 0)); f.owner = a.owner;
+  }
+  sheetId = id;
+  const st = Wm.standings(), rank = st.indexOf(f) + 1;
+  const xpBase = careerXp(M.after ? M.w + 1 : M.w)[f.id] || 0;
+  const lv = M.after && M.W.F.get(f.id) ? M.W.F.get(f.id).level : f.level;
+  const pending = M.after || f.house ? 0 : f.px, proj = f.house ? lv : B.levelFromXp(xpBase + pending);
+  const next = B.xpForLevel(Math.min(B.MAX_LEVEL, lv + 1)), cur = B.xpForLevel(lv);
+  const prog = f.house || lv >= B.MAX_LEVEL ? 1 : Math.max(0, Math.min(1, (xpBase + pending - cur) / Math.max(1, next - cur)));
+  const role = roleOf(f), knack = knackOf(f);
+  const stat = (k, v, txt) => `<div class="kv"><span class="mono muted">${k}</span><div class="bar"><i style="width:${Math.round(v * 100)}%"></i></div><span class="mono">${txt ?? Math.round(v * 100)}</span></div>`;
+  // the re:CALL: who it trusts, who it doesn't
+  const mem = Object.entries(f.mem || {}).map(([oid, m]) => ({ o: Wm.F.get(oid) || M.W.F.get(oid), m })).filter(x => x.o && (x.m.lied || x.m.called));
+  const doubts = mem.filter(x => x.m.lied).sort((a, b) => b.m.lied - a.m.lied).slice(0, 3);
+  const trusts = mem.filter(x => x.m.called && !x.m.lied).sort((a, b) => b.m.called - a.m.called).slice(0, 3);
+  const memRow = (o, txt) => `<div class="hist">${img(o, 36)}<div><div class="nm">${esc(o.name)}</div><div class="sub">${txt}</div></div><span></span><span></span></div>`;
+  const hist = (f.history || []).slice(-10).reverse();
+  const tapeOf = h => { const r = Wm.rounds[h.r]; const gm = r && r.tables[h.i]; return gm && gm.events ? gm : null; };
+  setHTML($('#sheetIn'), `
+    <div class="top">
+      ${dossierImg(f, 3)}
+      <div style="min-width:0">
+        <div class="nm" style="font-size:24px">${esc(f.name)}</div>
+        <div class="sub">${f.token ? 're:gen #' + f.token + ' · ' : ''}${role.label} · ${B.TYPE_LABEL[f.type]}</div>
+        <div class="sub" style="margin-top:4px">${f.house ? 'A house regular.' : 'Sent in by ' + esc(ownerName(f.owner))}</div>
+      </div>
+      <button class="btn ghost small" id="sheetClose" aria-label="Close">✕</button>
+    </div>
+    <p class="muted" style="margin:12px 0 10px">${esc(role.blurb)}</p>
+    <div class="kv" style="grid-template-columns:62px 1fr 64px"><span class="mono muted">Level ${lv}</span><div class="bar"><i style="width:${prog * 100}%;background:var(--gold)"></i></div><span class="mono">${lv >= B.MAX_LEVEL ? 'MAX' : proj > lv ? '→ ' + proj : 'next ' + (lv + 1)}</span></div>
+    <div class="sub" style="margin-bottom:10px">${f.house ? '' : `${xpBase} XP banked${pending ? ` · +${pending} lands when the last bell rings` : ''}`}</div>
+    ${stat('EYES', f.per)}${stat('MOUTH', f.pers)}${stat('POKER', f.dec)}${stat('NERVE', f.res)}
+    <div class="sub" style="margin:2px 0 0">Eyes catch tells. Mouth sways the table. Poker face sells a lie. Nerve holds a read.</div>
+    <div class="h2"><h2 style="font-size:16px">Knack: ${knack.name}</h2></div>
+    <div class="muted">${knack.blurb}</div>
+    <div class="h2"><h2 style="font-size:16px">This week</h2>${rank ? `<span class="mono ${rank <= Wm.boothSize() ? 'gold' : 'muted'}">#${rank} of ${st.length}</span>` : ''}</div>
+    <div class="stats"><div class="stat"><span class="mono muted">PX</span><b>${f.px}</b><span class="sub">${f.w}-${f.l} in ${f.games}</span></div>
+      <div class="stat"><span class="mono muted">As the rat</span><b>${f.ratWins}/${f.ratGames}</b><span class="sub">got away</span></div>
+      <div class="stat"><span class="mono muted">Called it</span><b>${f.calls}</b><span class="sub">first to name the rat</span></div></div>
+    <div class="h2"><h2 style="font-size:16px">re:CALL</h2><span class="mono muted">what it remembers</span></div>
+    ${doubts.length ? doubts.map(({ o, m }) => memRow(o, `lied to it ${m.lied === 1 ? 'once' : m.lied + ' times'} · won't take its word`)).join('') : ''}
+    ${trusts.length ? trusts.map(({ o, m }) => memRow(o, `called the rat ${m.called === 1 ? 'once' : m.called + ' times'} · trusts its reads`)).join('') : ''}
+    ${!doubts.length && !trusts.length ? '<div class="muted">Nothing yet. It sits down fresh.</div>' : ''}
+    <div class="h2"><h2 style="font-size:16px">Recent games</h2></div>
+    ${hist.length ? hist.map(h => { const tp = tapeOf(h); return `<div class="hist"><span class="mono muted">BELL ${h.r + 1}</span><div class="nm">${h.won ? '<span class="w">W</span>' : 'L'} · ${h.rat ? '<span class="red">was the rat</span>' : 'clean'}</div><span class="mono">+${h.px}</span>${tp ? `<button class="btn ghost small" data-tape="${h.r}:${h.i}">▶</button>` : '<span></span>'}</div>`; }).join('') : '<div class="muted">No games this week yet.</div>'}
+    ${isMine(f.id) ? `<div style="margin-top:14px"><button class="btn ghost" data-go="enter">Manage in ENTER</button></div>` : ''}`);
+  $('#sheet').hidden = false;
+}
+function closeSheet() { $('#sheet').hidden = true; sheetId = null; }
+$('#sheet').addEventListener('click', e => {
+  if (e.target.id === 'sheet' || e.target.closest('#sheetClose')) return closeSheet();
+  const tp = e.target.closest('[data-tape]');
+  if (tp) { const [r, i] = tp.dataset.tape.split(':').map(Number); const gm = M.Wmain.rounds[r].tables[i]; closeSheet(); showTab('watch'); play(M.Wmain, gm); window.scrollTo({ top: 0 }); }
+  const go = e.target.closest('[data-go]'); if (go) { closeSheet(); showTab(go.dataset.go); }
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && sheetId) closeSheet(); });
+
+/* =====================================================================
+   SITE MODE — on your own site: wallet sign-in, real re:gens, server roster
+   ===================================================================== */
+const API = String(window.REBRAWL_API || '/api').replace(/\/$/, '');
+const SESSION_KEY = 'rebrawl-session';
+const W8 = { providers: [], session: store.get(SESSION_KEY, null), owned: null, busy: '', pick: null, err: '' };
+async function api(path, { method = 'GET', body, auth } = {}) {
+  const headers = {};
+  if (body) headers['content-type'] = 'application/json';
+  if (auth && W8.session) headers.authorization = 'Bearer ' + W8.session.session;
+  const r = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401 && auth) signOut(true);
+  if (!r.ok) throw new Error(j.error || 'Something went wrong. Try again.');
+  return j;
+}
+async function probeSite() {
+  try {
+    const r = await fetch(API + '/roster', { cache: 'no-store' });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j && typeof j.agents === 'object' ? j : null;
+  } catch { return null; }
+}
+function applyRoster(j) {
+  S.docs = j.agents || {}; S.seasons = j.seasons || {}; S.loaded = true; S.seasonsLoaded = true;
+}
+let pollT = 0;
+async function startSite(first) {
+  S.mode = 'site'; applyRoster(first);
+  S.uid = W8.session ? W8.session.address : null; S.canWrite = !!W8.session;
+  if (W8.session) refreshOwned();
+  clearInterval(pollT);
+  pollT = setInterval(async () => { try { applyRoster(await api('/roster')); schedule(); } catch {} }, 30e3);
+  // wallets announce themselves (EIP-6963)
+  addEventListener('eip6963:announceProvider', e => {
+    const d = e.detail; if (!d || !d.provider || W8.providers.some(p => p.info.uuid === d.info.uuid)) return;
+    W8.providers.push(d); renderEnter();
+  });
+  dispatchEvent(new Event('eip6963:requestProvider'));
+}
+const short = a => a ? a.slice(0, 6) + '…' + a.slice(-4) : '';
+const toHex = s => '0x' + Array.from(new TextEncoder().encode(s), b => b.toString(16).padStart(2, '0')).join('');
+async function connect(provider) {
+  W8.err = ''; W8.busy = 'Open your wallet to connect…'; renderEnter();
+  try {
+    const [address] = await provider.request({ method: 'eth_requestAccounts' });
+    W8.busy = 'Sign the message in your wallet. It\'s free and moves nothing.'; renderEnter();
+    const n = await api('/nonce?address=' + address);
+    const signature = await provider.request({ method: 'personal_sign', params: [toHex(n.message), address] });
+    W8.busy = 'Checking your re:gens…'; renderEnter();
+    const j = await api('/login', { method: 'POST', body: { message: n.message, signature, ticket: n.ticket } });
+    W8.session = { session: j.session, address: j.address }; store.set(SESSION_KEY, W8.session);
+    S.uid = j.address; S.canWrite = true; W8.owned = j.regens; W8.busy = '';
+    loadArt(j.regens.map(x => x.id));
+    schedule(); renderEnter();
+  } catch (e) {
+    W8.busy = ''; W8.err = e && (e.code === 4001 || /reject|denied/i.test(e.message || '')) ? 'You cancelled in your wallet. Nothing was signed.' : (e.message || 'Couldn\'t connect.');
+    renderEnter();
+  }
+}
+function signOut(expired) {
+  W8.session = null; W8.owned = null; W8.pick = null; store.set(SESSION_KEY, null);
+  S.uid = null; S.canWrite = false;
+  if (expired) W8.err = 'Your sign-in expired. Connect again.';
+  schedule(); renderEnter();
+}
+async function refreshOwned(fresh) {
+  try { const j = await api('/regens' + (fresh ? '?fresh' : ''), { auth: true }); W8.owned = j.regens; loadArt(j.regens.map(x => x.id)); renderEnter(); }
+  catch (e) { W8.err = e.message; renderEnter(); }
+}
+// a re:gen's art -> the same 18x18 pixel format the game draws
+const artCache = new Map();
+function pxOf(id) { return artCache.get(id) || store.get('rebrawl-px-' + id, null); }
+async function loadArt(ids) {
+  for (const id of ids) {
+    if (pxOf(id)) continue;
+    try {
+      const im = new Image(); im.crossOrigin = 'anonymous'; im.src = API + '/art?id=' + id;
+      await im.decode();
+      const px = sampleArt(im);
+      artCache.set(id, px); store.set('rebrawl-px-' + id, px);
+      renderEnter();
+    } catch {}
+  }
+}
+function sampleArt(im) {
+  const N = 18, K = 10, c = makeCanvas(N * K, N * K), k = c.getContext('2d', { willReadFrequently: true });
+  k.imageSmoothingEnabled = false; k.drawImage(im, 0, 0, N * K, N * K);
+  const data = k.getImageData(0, 0, N * K, N * K).data;
+  const cells = [];
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const i = ((y * K + K / 2) * N * K + x * K + K / 2) * 4;
+    const r = data[i], g_ = data[i + 1], b = data[i + 2], a = data[i + 3];
+    // see-through or the sage backdrop -> empty, so the card's own backdrop shows
+    if (a < 128 || Math.abs(r - 99) + Math.abs(g_ - 150) + Math.abs(b - 133) < 30) cells.push(null);
+    else cells.push([r, g_, b]);
+  }
+  let step = 1;
+  const hexOf = c => c.map(v => Math.min(255, Math.round(v / step) * step).toString(16).padStart(2, '0')).join('');
+  let pal;
+  do { pal = [...new Set(cells.filter(Boolean).map(hexOf))]; if (pal.length > 62) step *= 2; } while (pal.length > 62 && step < 64);
+  pal = pal.slice(0, 62);
+  const d = cells.map(c => c ? ALPH[Math.max(0, pal.indexOf(hexOf(c)))] : '.').join('');
+  return { p: pal.join(',') || '000000', d };
+}
+function ownedFighter(t) {
+  const px = pxOf(t.id);
+  const a = { id: 'regen' + t.id, token: t.id, look: -1, style: t.style, type: t.type, px, name: '#' + t.id };
+  return Rat.buildPlayer(a, B.levelFromXp(careerXp(M.w)['regen' + t.id] || 0));
+}
+function walletSection(mine) {
+  let html = '';
+  if (!W8.session) {
+    html += `<div class="h2"><h2>Bring your re:gens</h2></div><div class="card">
+      <p style="margin:0 0 10px">Connect your wallet and sign one message to prove what you hold. Re:gens in your wallet and ones you've staked both count. Signing is free and moves nothing.</p>`;
+    if (W8.providers.length) html += W8.providers.map((p, i) => `<button class="btn" style="width:100%;margin-bottom:6px;display:flex;align-items:center;gap:10px;justify-content:center" data-wallet="${i}">${p.info.icon && /^data:image\//.test(p.info.icon) ? `<img src="${esc(p.info.icon)}" width="20" height="20" alt="">` : ''}${esc(p.info.name)}</button>`).join('');
+    else if (window.ethereum) html += `<button class="btn" style="width:100%" data-wallet="injected">Connect wallet</button>`;
+    else {
+      const here = location.href.replace(/^https?:\/\//, '');
+      html += `<p class="muted" style="margin:0 0 8px">No wallet found in this browser. Open this page inside your wallet app:</p>
+        <a class="btn" style="display:block;text-align:center;text-decoration:none;margin-bottom:6px" href="https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(location.href)}">Open in Coinbase Wallet</a>
+        <a class="btn ghost" style="display:block;text-align:center;text-decoration:none" href="https://metamask.app.link/dapp/${esc(here)}">Open in MetaMask</a>`;
+    }
+    if (W8.busy) html += `<div class="note">${esc(W8.busy)}</div>`;
+    if (W8.err) html += `<div class="note" style="color:var(--ember)">${esc(W8.err)}</div>`;
+    return html + `</div>`;
+  }
+  html += `<div class="h2"><h2>Your re:gens</h2><span class="mono muted">${short(W8.session.address)} · <button class="mono muted" data-signout style="text-decoration:underline">sign out</button></span></div>`;
+  if (W8.err) html += `<div class="note" style="color:var(--ember)">${esc(W8.err)}</div>`;
+  if (!W8.owned) return html + `<div class="note">Checking your wallet and stakes…</div>`;
+  if (!W8.owned.length) return html + `<div class="note">No re:gens found in this wallet or its stakes. Picked one up just now? <button class="mono" data-refresh style="text-decoration:underline">Check again</button></div>`;
+  const inIds = new Set(mine.map(a => a.token));
+  if (!W8.pick || !W8.owned.some(t => t.id === W8.pick)) W8.pick = (W8.owned.find(t => !inIds.has(t.id)) || W8.owned[0]).id;
+  html += `<div class="card"><div class="grid">${W8.owned.map(t => {
+    const px = pxOf(t.id);
+    const face = px ? img({ token: t.id, px }, 54, 3) : `<div class="px mono" style="width:100%;aspect-ratio:1;display:grid;place-items:center;background:var(--sage-deep);font-size:10px">#${t.id}</div>`;
+    return `<button class="${t.id === W8.pick ? 'on' : ''}" data-token="${t.id}" aria-label="re:gen #${t.id}" style="position:relative">${face}
+      ${t.where !== 'wallet' ? `<span class="tag" style="position:absolute;left:2px;bottom:2px">${t.where.toUpperCase()}</span>` : ''}${inIds.has(t.id) ? '<span class="tag gold" style="position:absolute;right:2px;top:2px">IN</span>' : ''}</button>`;
+  }).join('')}</div>`;
+  const t = W8.owned.find(x => x.id === W8.pick), f = ownedFighter(t), kn = knackOf(f);
+  const taken = inIds.has(t.id), full = mine.length >= 3;
+  html += `<div class="pick">${f.art ? dossierImg(f, 3) : '<div class="note">Loading art…</div>'}<div>
+      <div class="nm" style="font-size:20px">re:gen #${t.id}</div>
+      <div class="sub">${roleOf(f).label} · ${B.TYPE_LABEL[f.type]} · L${f.level}${t.where !== 'wallet' ? ' · ' + t.where : ''}</div>
+      <div style="margin-top:6px">${roleOf(f).blurb}</div>
+      <div class="muted" style="font-size:14px;margin-top:4px"><b>${kn.name}</b>: ${kn.blurb}</div>
+    </div></div>
+    ${taken ? `<div class="note">Already in. Find it under At the tables.</div>` : full ? `<div class="note">You have 3 in. Retire one to send this one.</div>` : `
+    <label class="field"><span class="mono muted">Call sign</span><input id="callSign" maxlength="12" placeholder="#${t.id}" autocomplete="off"></label>
+    <button class="btn" id="walkIn" ${f.art ? '' : 'disabled'} style="width:100%">SIT DOWN</button>`}
+    <div class="sub" style="margin-top:8px">Its knack comes from its Type trait and its role from its Eyes. Levels stay with the re:gen, even if it changes hands.</div></div>`;
+  return html;
+}
+async function siteAct(body, ok) {
+  try {
+    const j = await api('/roster', { method: 'POST', body, auth: true });
+    S.docs = { ...S.docs, [j.address]: j.list }; schedule(); if (ok) toast(ok);
+  } catch (e) { toast(e.message); }
+}
+
+/* =====================================================================
+   ENTER — send a re:gen in
+   ===================================================================== */
+let pickLook = 0, retireArm = null;
+function newId() { const a = new Uint32Array(2); (crypto.getRandomValues ? crypto.getRandomValues(a) : a.fill(Math.random() * 4e9)); return (a[0].toString(36) + a[1].toString(36)).slice(0, 12).padEnd(8, '0'); }
+function pruneLog(log) {
+  const cut = now() - 21 * 864e5, keep = log.filter(e => e[0] >= cut), before = log.filter(e => e[0] < cut);
+  return (before.length ? [before[before.length - 1]] : []).concat(keep).slice(-60);
+}
+function renderEnter() {
+  const el = $('#enter'); if (!M.W) { el.innerHTML = ''; return; }
+  const mine = myList();
+  const canSend = S.canWrite && S.loaded;
+  let html = '';
+  if (S.mode === 'site' && !W8.session) { setHTML(el, walletSection(mine) + `<p class="muted" style="font-size:14px;margin:14px 2px">No re:gen? You can still watch every table and follow the board.</p>`); return; }
+  html += `<div class="h2"><h2>At the tables</h2><span class="mono muted">${mine.length}/3</span></div>`;
+  if (S.mode === 'local') html += `<div class="note">Solo on this device. Your re:gens sit down with the house regulars.</div>`;
+  else if (S.mode === 'shared' && !S.canWrite) html += `<div class="note">You can watch everything here. To send a re:gen in, ask the page's owner for Contributor access.</div>`;
+  if (S.mode === 'shared' || S.mode === 'local') html += `<div class="sub" style="margin:0 2px 10px">This preview uses 30 sample re:gens. On your own site, holders sign in with their wallet and bring their own.</div>`;
+  if (S.note) html += `<div class="note">${esc(S.note)}</div>`;
+  for (const a of mine) {
+    const f = M.Wmain.F.get(a.id) || M.W.F.get(a.id);
+    const live = M.W.F.get(a.id);
+    const on = B.isOn(a, now() + 1);
+    let line;
+    if (!f || !live || !live.seated) line = on ? (M.after ? 'Sits down when the doors open.' : 'Sits down at the next deal.') : 'Benched.';
+    else if (M.after) line = 'Playing exhibition deals.';
+    else {
+      const st = M.W.status(live), last = live.history[live.history.length - 1];
+      line = st === 'TABLE' ? (last && last.r === M.W.round - 1 ? `At the tables. Last deal: ${last.won ? 'won' : 'lost'}${last.rat ? ' as the rat' : ''}.` : 'At the tables.') : st === 'QUEUED' ? 'In line for a seat.' : on ? 'Back at the next deal.' : 'Benched. Keeps its seat.';
+    }
+    const ff = f || Rat.buildPlayer(a, B.levelFromXp(careerXp(M.w)[a.id] || 0));
+    html += `<div class="card mine-card">
+      <button data-open="${a.id}" style="padding:0">${img(a, 54, 3)}</button>
+      <div style="min-width:0"><div class="nm">${esc(a.name)}</div><div class="sub">${roleOf(ff).label} · ${B.TYPE_LABEL[ff.type]} · L${ff.level}${f && f.seated ? ` · ${f.px} PX · ${f.w}-${f.l}` : ''}</div><div style="font-size:14px;margin-top:3px">${line}</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn small ${on ? 'ghost' : ''}" data-toggle="${a.id}" ${canSend ? '' : 'disabled'}>${on ? 'BENCH' : 'SEND IN'}</button>
+        <button class="btn ghost small" data-retire="${a.id}" ${canSend ? '' : 'disabled'}>${retireArm === a.id ? 'SURE?' : 'RETIRE'}</button>
+      </div></div>`;
+  }
+  if (!mine.length) html += `<div class="muted" style="margin:0 2px 8px">Nobody yet. Pick a re:gen below and send it in.</div>`;
+  if (S.mode === 'site') html += walletSection(mine);
+  else if (mine.length < 3) {
+    const L = B.LOOKS[pickLook], st = Rat.ROLES[L.style], ty = Rat.KNACKS[L.type];
+    const lv = 1;
+    html += `<div class="h2"><h2>Send one in</h2><span class="mono muted">pick a re:gen</span></div>
+      <div class="card">
+        <div class="grid" id="lookGrid">${B.LOOKS.map((l, i) => `<button class="${i === pickLook ? 'on' : ''}" data-look="${i}" aria-label="${l.name}">${img(i, 54, 3)}</button>`).join('')}</div>
+        <div class="pick">${dossierImg(Rat.buildPlayer({ id: 'preview' + pickLook, look: pickLook, name: L.name }, 1), 3)}<div>
+          <div class="nm" style="font-size:20px">${L.name}</div>
+          <div class="sub">${st.label} · ${B.TYPE_LABEL[L.type]} · knack: ${ty.name}</div>
+          <div style="margin-top:6px">${st.blurb}</div>
+          <div class="muted" style="font-size:14px;margin-top:4px">${ty.blurb}</div>
+        </div></div>
+        <label class="field"><span class="mono muted">Call sign</span><input id="callSign" maxlength="12" placeholder="${L.name}" autocomplete="off"></label>
+        <button class="btn" id="walkIn" ${canSend ? '' : 'disabled'} style="width:100%">SIT DOWN</button>
+        <div class="sub" style="margin-top:8px">${M.after ? 'Doors are shut for the night. It sits down when they open, ' + fmtTime(B.weekOpen(M.w + 1)) + ' your time, and plays exhibition deals before then.' : 'It sits down at the next deal, level ' + lv + '. From then on it makes every call itself, rat or not.'}</div>
+      </div>`;
+  }
+  if (S.mode !== 'site' && mine.length < 3) html += ownSection();
+  html += `<p class="muted" style="font-size:14px;margin:14px 2px">Nobody steers once it sits down. You can bench a re:gen (it keeps its seat) or retire it for good. That's the whole remote.</p>`;
+  setHTML(el, html);
+}
+$('#enter').addEventListener('click', e => {
+  if (e.target.closest('#ownSit')) {
+    const a = ownAgent(); if (!a || !a.px || !S.canWrite) return;
+    const list = myList(); if (list.length >= 3 || list.some(x => x.token === a.token)) return;
+    const name = cleanName($('#ownName').value) || '#' + a.token;
+    saveMine([...list, { id: newId(), token: a.token, look: -1, type: a.type, style: a.style, px: a.px, name, log: [[now(), 1]] }]);
+    OWN.num = ''; OWN.px = null;
+    toast(`${name} sits down${M.after ? ' at the next exhibition deal' : ' at the next deal'}.`);
+    return;
+  }
+  const wl = e.target.closest('[data-wallet]');
+  if (wl) { const p = wl.dataset.wallet === 'injected' ? window.ethereum : W8.providers[+wl.dataset.wallet].provider; connect(p); return; }
+  if (e.target.closest('[data-signout]')) return signOut();
+  if (e.target.closest('[data-refresh]')) { W8.owned = null; renderEnter(); return refreshOwned(true); }
+  const tk = e.target.closest('[data-token]');
+  if (tk) { W8.pick = +tk.dataset.token; const v = $('#callSign') ? $('#callSign').value : ''; renderEnter(); if (v && $('#callSign')) $('#callSign').value = v; return; }
+  if (S.mode === 'site') {
+    if (e.target.closest('#walkIn')) {
+      const t = W8.owned && W8.owned.find(x => x.id === W8.pick); if (!t) return;
+      const name = cleanName($('#callSign').value) || '#' + t.id;
+      e.target.closest('#walkIn').disabled = true;
+      siteAct({ action: 'enroll', token: t.id, name, px: pxOf(t.id) }, `${name} sits down${M.after ? ' at the next exhibition deal' : ' at the next deal'}.`);
+      return;
+    }
+    const tg2 = e.target.closest('[data-toggle]'); if (tg2) return siteAct({ action: 'toggle', id: tg2.dataset.toggle });
+    const rt2 = e.target.closest('[data-retire]');
+    if (rt2) {
+      if (retireArm !== rt2.dataset.retire) { retireArm = rt2.dataset.retire; renderEnter(); setTimeout(() => { if (retireArm === rt2.dataset.retire) { retireArm = null; renderEnter(); } }, 3000); return; }
+      retireArm = null; return siteAct({ action: 'retire', id: rt2.dataset.retire }, 'Retired. Its XP stays with the re:gen.');
+    }
+  }
+  const lk = e.target.closest('[data-look]');
+  if (lk) { pickLook = +lk.dataset.look; const v = $('#callSign') ? $('#callSign').value : ''; renderEnter(); if (v) $('#callSign').value = v; return; }
+  const op = e.target.closest('[data-open]'); if (op) return openSheet(op.dataset.open);
+  if (e.target.closest('#walkIn')) {
+    if (!S.canWrite) return;
+    const list = myList(); if (list.length >= 3) return;
+    const name = cleanName($('#callSign').value) || B.LOOKS[pickLook].name;
+    const a = { id: newId(), look: pickLook, name, log: [[now(), 1]] };
+    saveMine([...list, a]);
+    $('#callSign').value = '';
+    toast(`${name} sits down${M.after ? ' at the next exhibition deal' : ' at the next deal'}.`);
+    return;
+  }
+  const tg = e.target.closest('[data-toggle]');
+  if (tg) {
+    const list = myList().map(a => a.id === tg.dataset.toggle ? { ...a, log: pruneLog([...a.log, [now(), B.isOn(a, now() + 1) ? 0 : 1]]) } : a);
+    saveMine(list); return;
+  }
+  const rt = e.target.closest('[data-retire]');
+  if (rt) {
+    if (retireArm !== rt.dataset.retire) { retireArm = rt.dataset.retire; renderEnter(); setTimeout(() => { if (retireArm === rt.dataset.retire) { retireArm = null; renderEnter(); } }, 3000); return; }
+    retireArm = null; saveMine(myList().filter(a => a.id !== rt.dataset.retire)); toast('Retired. Its XP stays on the books.');
+  }
+});
+
+
+/* ---------- bring your own re:gen (preview: upload its picture) ---------- */
+const TYPE_OPTS = [['type 1', 'human'], ['type 2', 'human'], ['type 3', 'human'], ['robot', 'robot'], ['re:bot', 'rebot'], ['gold', 'gold'], ['ape', 'ape'], ['alien', 'alien'], ['zombie', 'zombie'], ['ghost', 'ghost'], ['bones', 'bones'], ['mummy', 'mummy'], ['demoness', 'demoness'], ['celestial', 'celestial']];
+const EYE_STYLE = { lasers: 'BRUISER', evil: 'BRUISER', scar: 'BRUISER', cyclops: 'BRUISER', sleep: 'TANK', 'crash test dummy': 'TANK', sus: 'TRICKSTER', punk: 'TRICKSTER', 'punk(left)': 'TRICKSTER', 'punk(right)': 'TRICKSTER', left: 'HUSTLER', right: 'HUSTLER', white: 'COUNTER', black: 'GAMBLER', normal: '' };
+const STYLE_KEYS = ['BRUISER', 'COUNTER', 'HUSTLER', 'TRICKSTER', 'TANK', 'GAMBLER'];
+// same rules the site server uses (lib/traits.js), so a re:gen plays the same everywhere
+const styleFromEyes = (eyes, token) => EYE_STYLE[eyes] || STYLE_KEYS[((token * 2654435761) >>> 0) % STYLE_KEYS.length];
+const OWN = { num: '', type: 'type 1', eyes: 'normal', px: null, err: '' };
+function ownAgent() {
+  const token = parseInt(OWN.num, 10);
+  if (!(token >= 1 && token <= 6666)) return null;
+  const type = (TYPE_OPTS.find(t => t[0] === OWN.type) || TYPE_OPTS[0])[1];
+  return { id: 'own' + token, token, look: -1, type, style: styleFromEyes(OWN.eyes, token), px: OWN.px, name: '#' + token };
+}
+function ownSection() {
+  const a = ownAgent(), f = a && a.px ? Rat.buildPlayer(a, 1) : null;
+  const taken = a && myList().some(x => x.token === a.token);
+  return `<div class="h2"><h2>Or use your own</h2><span class="mono muted">upload a re:gen</span></div>
+    <div class="card">
+      <p style="margin:0 0 10px">Upload your re:gen's picture (the square 18×18 pixel image) and fill in two of its traits. Its <b>Type</b> sets its knack and its <b>Eyes</b> set its role.</p>
+      <label class="field"><span class="mono muted">re:gen number</span><input id="ownNum" inputmode="numeric" maxlength="4" placeholder="1309" value="${esc(OWN.num)}" autocomplete="off" style="text-transform:none"></label>
+      <label class="field"><span class="mono muted">Picture</span><input id="ownFile" type="file" accept="image/*" style="font-family:var(--text);font-size:14px"></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <label class="field"><span class="mono muted">Type</span><select id="ownType" class="sel">${TYPE_OPTS.map(([v]) => `<option ${v === OWN.type ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+        <label class="field"><span class="mono muted">Eyes</span><select id="ownEyes" class="sel">${Object.keys(EYE_STYLE).map(v => `<option ${v === OWN.eyes ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+      </div>
+      ${OWN.err ? `<div class="note" style="color:var(--ember)">${esc(OWN.err)}</div>` : ''}
+      ${f ? `<div class="pick">${dossierImg(f, 3)}<div><div class="nm" style="font-size:20px">re:gen #${a.token}</div>
+        <div class="sub">${roleOf(f).label} · ${B.TYPE_LABEL[f.type]} · knack: ${knackOf(f).name}</div>
+        <div style="margin-top:6px">${roleOf(f).blurb}</div><div class="muted" style="font-size:14px;margin-top:4px">${knackOf(f).blurb}</div></div></div>` : ''}
+      ${taken ? `<div class="note">That one's already at the table.</div>` : `
+      <label class="field"><span class="mono muted">Call sign</span><input id="ownName" maxlength="12" placeholder="${a ? '#' + a.token : 'Any name'}" autocomplete="off"></label>
+      <button class="btn" id="ownSit" ${f && S.canWrite && S.loaded ? '' : 'disabled'} style="width:100%">SIT DOWN</button>`}
+      <div class="sub" style="margin-top:8px">In this preview nothing checks that you hold it. On your site, wallet sign-in does, and it fills in the traits for you.</div>
+    </div>`;
+}
+async function loadOwnPicture(file) {
+  OWN.err = ''; OWN.px = null;
+  try {
+    const url = URL.createObjectURL(file), im = new Image(); im.src = url; await im.decode();
+    if (im.naturalWidth !== im.naturalHeight) OWN.err = "That picture isn't square, so the pixels may come out wrong.";
+    OWN.px = sampleArt(im); URL.revokeObjectURL(url);
+  } catch { OWN.err = "Couldn't read that picture. Try the PNG of your re:gen."; }
+  const name = $('#ownName') ? $('#ownName').value : '';
+  renderEnter(); if (name && $('#ownName')) $('#ownName').value = name;
+}
+$('#enter').addEventListener('change', e => {
+  const id = e.target.id;
+  if (id === 'ownFile' && e.target.files[0]) return loadOwnPicture(e.target.files[0]);
+  if (id === 'ownNum' || id === 'ownType' || id === 'ownEyes') {
+    if (id === 'ownNum') OWN.num = e.target.value.replace(/\D/g, '').slice(0, 4);
+    if (id === 'ownType') OWN.type = e.target.value;
+    if (id === 'ownEyes') OWN.eyes = e.target.value;
+    const name = $('#ownName') ? $('#ownName').value : '';
+    renderEnter(); if (name && $('#ownName')) $('#ownName').value = name;
+  }
+});
+
+/* =====================================================================
+   LORE
+   ===================================================================== */
+function renderLore() {
+  const open = B.weekOpen(B.weekIndex(now())), close = B.weekClose(B.weekIndex(now()));
+  setHTML($('#tab-lore'), `
+  <div class="h2"><h2>Who's the rat?</h2><span class="mono muted">a re:generates story</span></div>
+  <div class="noir">
+    <p>Brooklyn. Rain on the glass. DeStefano's stops serving at eleven, and the back room fills up.</p>
+    <p>Somebody's been talking to the fugz. Every night the deal goes around, and one re:gen at every table is a <b class="red">rat</b>. Nobody knows which. Not even you.</p>
+    <p>By day they talk. Tips, alibis, a finger pointed across the felt. Then they vote, and somebody goes out back.</p>
+    <p style="margin:0">By night the lights go out, and the rat takes someone out back on its own. Catch it, or it walks out with the pot.</p>
+  </div>
+  <h3>How a night goes</h3>
+  <ul>
+    <li><b>The deal.</b> Every bell, everyone in the room is dealt into tables of six to eight. One seat at each is the rat.</li>
+    <li><b>Tips.</b> Clean re:gens sometimes catch a tip: somebody seen by the back door. Sharp eyes get better tips. Tips can be wrong.</li>
+    <li><b>Talk.</b> Each takes a turn: accuse, share a tip, vouch for someone, or keep quiet. The rat lies. Some can tell.</li>
+    <li><b>The vote.</b> Whoever gets a clear plurality goes out back, and everyone learns what they were. Re:gens that aren't sure keep their hands down.</li>
+    <li><b>Lights out.</b> The rat takes someone out back, usually whoever's onto it.</li>
+    <li>The table wins when the rat goes out. The rat wins if it's down to three, or it lasts ${Rat.MAX_DAYS} days.</li>
+  </ul>
+  <h3>The week</h3>
+  <ul>
+    <li>Doors open Monday at midnight UTC (${fmtTime(open)} your time). The last bell rings Saturday night in Brooklyn (${fmtTime(close)} your time).</li>
+    <li>A new deal every hour, ${B.ROUNDS} a week. Nobody steers. You send a re:gen in, and it makes every call.</li>
+    <li>Catching the rat pays 10 PX if you're still at the table, 5 if you're not, +4 for the deciding vote and +5 for calling it first. A rat that gets away takes 25 PX, plus 3 for every clean re:gen voted out.</li>
+    <li>When the last bell rings, the top 10% by PX sit in the <b class="gold">Gold Booth</b>. Saturday night to Monday is after hours: exhibition deals that don't count.</li>
+  </ul>
+  <h3>The re:CALL</h3>
+  <p>Every re:gen remembers who lied to it and who called the rat right. It carries that from table to table all week, and it trusts and doubts accordingly. Sometimes that memory is the tell. Sometimes it's a grudge that sends the wrong re:gen out back.</p>
+  <h3>Who they are</h3>
+  <p>A re:gen's role comes from its style. In your own re:gens, that's read from the Eyes trait.</p>
+  <table class="sp">${Object.values(Rat.ROLES).map(r => `<tr><td><span class="mono">${r.label}</span></td><td class="muted">${r.blurb}</td></tr>`).join('')}</table>
+  <h3>Knacks</h3>
+  <p>A re:gen's type gives it one knack.</p>
+  <table class="sp">${Object.entries(Rat.KNACKS).map(([k, t]) => `<tr><td><span class="mono">${B.TYPE_LABEL[k]}</span></td><td><b>${t.name}</b><br><span class="muted">${t.blurb}</span></td></tr>`).join('')}</table>
+  <h3>Levels</h3>
+  <p>A week's PX becomes XP when the last bell rings. Levels run 1 to ${B.MAX_LEVEL} and sharpen every sense a little. A sharper eye, a smoother lie. The file's frame climbs with level: sage, mist from 25, gold from 75, and the re:LOADED rainbow from 125.</p>
+  <p class="muted" style="margin-top:22px">Nostalgia re:loaded. Faces from the re:generates collection.</p>`);
+}
+
+/* =====================================================================
+   TABS + LOOP
+   ===================================================================== */
+const TABS = ['watch', 'board', 'enter', 'lore'];
+function showTab(name) {
+  if (!TABS.includes(name)) name = 'watch';
+  for (const t of TABS) { $('#tab-' + t).hidden = t !== name; }
+  $$('nav.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
+  if (location.hash.slice(1) !== name) { try { history.replaceState(null, '', '#' + name); } catch {} }
+  if (name === 'board') renderBoard();
+  if (name === 'enter') renderEnter();
+}
+$('nav.tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) { showTab(b.dataset.tab); window.scrollTo({ top: 0 }); } });
+addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+function renderAll() { renderChip(); renderWatchList(); renderBoard(); renderEnter(); renderLore(); }
+
+let last = performance.now(), tickT = 0;
+function frame(t) {
+  const dt = Math.min(100, t - last); last = t;
+  update(dt); draw(t);
+  if ((tickT += dt) > 1000) { tickT = 0; tick(); }
+  requestAnimationFrame(frame);
+}
+
+async function boot() {
+  showTab(location.hash.slice(1) || 'watch');
+  // show the house straight away while the roster loads
+  recompute(); renderAll(); autoPick();
+  requestAnimationFrame(frame);
+  const shared = await initShared();
+  if (!shared) {
+    const site = await probeSite();
+    if (site) startSite(site); else loadLocal();
+    recompute(); renderAll(); if (!PB.bout || PB.phase === 'idle') autoPick();
+  }
+}
+window.__brawl = { M, S, PB, W8, recompute, renderAll, play, autoPick, setOffset(ms) { clockOffset = ms; recompute(); renderAll(); autoPick(); } };
+boot();
+})();
+</script>
+</body>
+</html>
