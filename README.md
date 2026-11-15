@@ -1,5 +1,18 @@
 # re:informant: putting it live
 
+## Already set it up? Updating to the version with Solo, Public and Friends
+1. Unzip the new `re-informant-site.zip`.
+2. On GitHub, open your `re-informant` repository and click **Add file** → **Upload files**.
+3. Open the unzipped folder, select **everything inside it**, and drag it onto the page.
+   Files with the same name get replaced; that's what you want.
+4. Click **Commit changes**. Vercel puts the new version live by itself in about a minute.
+
+No new settings. Public and friends tables use the same database you already connected.
+
+---
+
+## First time
+
 You need three free accounts: **GitHub**, **Vercel** (sign in with GitHub) and **Alchemy**.
 About 20 minutes. No coding, no terminal.
 
@@ -45,6 +58,13 @@ Everyone else can watch.
 
 **Phones:** wallets only work inside the wallet app's browser. The page shows "Open in Coinbase Wallet" and
 "Open in MetaMask" buttons for that.
+
+**The modes:** ROOM is the hourly game you watch. PLAY has Solo (you and six bots), Public tables (anyone around,
+bots fill empty seats) and Friends (a private table with a code to share; bots fill what's left). Played games
+keep their own record on each player's device, separate from the weekly board.
+
+**If lots of people play:** live tables check in with the database every second or two while a game is on.
+If the game gets busy, keep an eye on your Upstash usage page; the free plan has a monthly limit.
 
 **Updating the game later:** on GitHub, open the `public` folder, upload the new `index.html` over the old one
 and commit. Vercel puts it live by itself.

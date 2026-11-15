@@ -21,10 +21,12 @@ export async function GET() {
       const list = [];
       for (const o of owners) { const code = await rpc(cfg.alchemyKey, 'eth_getCode', [o.address, 'latest']); list.push({ ...o, contract: !!code && code !== '0x' }); }
       const vaults = list.filter(o => o.contract && o.address !== ANVIL_MARKET);
-      vaultHtml = `<h2>Staked re:gens</h2><p>The biggest holders of re:gens on Base:</p><table>${list.map(o => `<tr><td>${o.count}</td><td><code>${esc(o.address)}</code></td><td>${o.address === ANVIL_MARKET ? 'Anvil market (for sale, skip)' : o.contract ? '<b>vault</b>' : 'wallet'}</td></tr>`).join('')}</table>`;
+      const top = vaults[0];
+      vaultHtml = `<h2>Staked re:gens</h2><p>The biggest holders of re:gens on Base:</p><table>${list.map(o => `<tr><td>${o.count}</td><td><code>${esc(o.address)}</code></td><td>${o.address === ANVIL_MARKET ? 'Anvil market (for sale, skip)' : o === top ? '<b>staking vault</b>' : o.contract ? 'other contract (leave out)' : 'wallet'}</td></tr>`).join('')}</table>`;
       if (vaults.length) {
-        const line = 'staked:' + vaults[0].address + (vaults[1] ? ',borrowed:' + vaults[1].address : '');
-        vaultHtml += cfg.vaults.length ? `<p class="ok">✓ REGEN_VAULTS is set.</p>` : `<p>To count staked re:gens, add this environment variable and redeploy:</p><p><b>REGEN_VAULTS</b> = <code>${esc(line)}</code></p><p class="fix">The bigger vault is usually staking and the smaller one loans. If the numbers look off, ask before guessing.</p>`;
+        // only the biggest vault: another contract could be someone's smart wallet, and counting it would credit the wrong people
+        const line = 'staked:' + top.address;
+        vaultHtml += cfg.vaults.length ? `<p class="ok">✓ REGEN_VAULTS is set.</p>` : `<p>To count staked re:gens, add this environment variable and redeploy:</p><p><b>REGEN_VAULTS</b> = <code>${esc(line)}</code></p><p class="fix">Only the biggest vault, the Anvil staking contract, goes in. Other contracts in the list could be anyone's smart wallet.</p>`;
       } else vaultHtml += '<p>No vault contracts found. Staked re:gens probably stay in wallets, which already count.</p>';
     } catch (e) { vaultHtml = `<h2>Staked re:gens</h2><p class="no">Couldn't reach Alchemy: ${esc(e.message)}. Check the API key is for Base Mainnet.</p>`; }
   }
