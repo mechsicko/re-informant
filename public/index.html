@@ -168,6 +168,17 @@ img.px.card-img{width:100%;height:auto;background:none;border-radius:3px;box-sha
 .sharebox{display:flex;gap:6px}
 .sharebox input{flex:1;min-width:0;padding:9px 10px;border-radius:4px;border:1px solid var(--ink-3);background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:12px}
 .log .line.mine{color:var(--gold)}
+/* the families */
+.chip.fam i{background:var(--gold)}
+.bossgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.boss{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left;padding:6px 8px;background:var(--ink-3);border-radius:4px;width:100%}
+.boss>span:nth-child(2){display:flex;flex-direction:column;min-width:0}
+.boss .nm{font-size:15px}
+.boss .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.boss.won{box-shadow:inset 0 0 0 1px var(--gold)}
+.fams{display:grid;gap:12px;margin-top:12px}
+.fam{display:grid;grid-template-columns:54px minmax(0,1fr);gap:12px;align-items:start}
+.fam p{margin:4px 0 0}
 </style>
 </head>
 <body>
@@ -837,6 +848,48 @@ const KNACKS = {
   mummy:     { name: 'WRAP',       blurb: 'Once a game, wraps someone up. No talking for a day.' },
 };
 
+// the families: eight bosses run the rackets around DeStefano's. Their real re:gens' traits (type, eyes) come from
+// the chain at runtime; this list is who they are, with their art (18x18, from the holders' own pictures). Players can't sit down as them or take their names.
+// If the wallet that holds a boss's re:gen plays it, the house's boss steps aside and the real one plays instead.
+const FAMILIES = [
+  { token: 967, name: "JED", family: "The House", turf: "DeStefano's, at the head of every table",
+    motto: "Smile now. Cry later.",
+    bio: "JED owns DeStefano's, and every family in this book eats there on JED's word. Laser eyes, the chair at the head of the table, and the last word at every sit-down. Monday nights the bosses come in for JED Talk and walk out with their orders. JED starts each morning buying up smiles on the cheap, because somebody always cries later.",
+    px: { p: "262626,323232,2f2f2f,2a2a2a,515151,131313,191919,00afff,00de68,0083bf,00ff00,00f716,00ce9b,14e71b,3cbf51,37ba4c,51ac6c,00a6f2,008dcd,ffff00,353637,333334,37383a,2b2b2c,2e2e2f,afafaf", d: "............................................................011111...........01111111.........011122221.........011111111.........033113314441......566778778.........97678abcadefg.....977778hh8..........97777777...........i777hh7...........9i7777............j799.............kljmnj...........kokojjp...........97mlmpm......." } },
+  { token: 589, name: "MECH", family: "The Mint", turf: "the studio where every face in town gets drawn",
+    motto: "Every face in this town, I drew.",
+    bio: "Orange beanie, gold chain. MECH drew all 6,666 faces in this town, eighteen pixels square, and brought back the ones everybody else forgot. MECH writes the songs on the jukebox too. The Mint don't forge papers. They forge faces, and every one of them is signed.",
+    px: { p: "bf3e00,ff5200,b63a00,f34e00,b8b800,f5f500,d9d2c8,ffffff,424242,585858,000000,ccc6bc,474747,ffff00,a39e96,353637,333334,37383a,2b2b2c,2e2e2f,afafaf", d: "............................................................011111...........01111111..........01111111.........2333333333........0313131313........455667667.........89566a66a.........896666bb9..........89666669...........c666bb9...........8c6999............d9e8.............fgdhid...........fjfjddk...........86hghkh......." } },
+  { token: 3326, name: "LYSS", family: "The Switchboard", turf: "every radio in Brooklyn, every day at noon",
+    motto: "Spread kindness. Be loyal. Embody consistency.",
+    bio: "On DeStefano's books LYSS is listed as the intern. Nobody believes it. LYSS runs the Switchboard: every day at noon the whole town tunes in, three hundred broadcasts and counting, and LYSS hears everything said on every one of them. Kind to everyone, loyal to the family, consistent enough to scare you. Bills Mafia on Sundays.",
+    px: { p: "1a1a1a,232323,e6e6e6,ffffff,202020,ae8b61,393939,ffff00,a1815a,d3d300,bfbf00,836849,8c704e,262626,2d2d2d,323232,ffc7c7", d: "........................................................00...............01.1211111........01.31111111.......01.311411110......01..1454441.......0...11165116.........001161116..........70168016.........9.755555...........a.b5885.............cc55..............b5...............d555.............deffef............b5dfgf......." } },
+  { token: 1794, name: "CEELOS", family: "The Roasters", turf: "the roasting warehouse by the Navy Yard",
+    motto: "Twenty-three years over the fire.",
+    bio: "Rainbow shades, a blue cap and a mustache you can hear across the room. CEELOS has roasted coffee for twenty-three years, and the Roasters move every bean that comes into Brooklyn. At five o'clock every day CEELOS calls the crews in to Re:Building Together, and every deal gets made over a cup. CEELOS can tell when a bean is burnt, and when you are.",
+    px: { p: "003ebf,0052fe,ffffc8,0064ff,005fff,f1f1bd,004ef0,0055f1,0046d7,276cfe,bf0000,ff0000,00ff96,00ffff,ffff00,ff9600,836849,ae8b61,bfbf00,a1815a,00bf71,191919,00bfbf,8c704e,a90000,e10000", d: "............................................................012222...........01223422.........011256752.........011222222.........088118819991.....abbcdefbbfe.......aghcdefabfe........ghcdifjjfe.........gkdhllllm..........nhhljjl...........gnhlhhl...........ohgg.............oppppp...........oppoppp...........ghooppp......." } },
+  { token: 1821, name: "BAKED", family: "The Haze", turf: "the Gulf run, Florida to the Brooklyn docks",
+    motto: "Lunch money is still money.",
+    bio: "Black beanie, rainbow shades and smoke where a face should be. BAKED works the Gulf run out of Florida and sits at CEELOS's right hand at five, scalping the market quietly while everybody else talks. BAKED won't trust a wallet BAKED can't hold, and eats ramen dry like chips. By the time you notice the fog, your lunch money is gone.",
+    px: { p: "262626,323232,242424,303030,bf0000,ff0000,00ff96,00ffff,ffff00,ff9600,4d7366,4e7468,bfbf00,476d60,00bf71,00bfbf,527b6e,466c5f,50796b,282828,2a2a2a,496f62", d: "............................................................011111...........01111111..........01111111.........2333333333........0313131313.......45567895598.......4a.67894598........b.67c9..98.........de7.....f..........g................0hi..............jjk1llk..........jj111111..........0j110111...........0110111......." } },
+  { token: 6460, name: "SLICKRICK", family: "The Re:Aligned", turf: "the card rooms after midnight",
+    motto: "Bad company corrupts good character.",
+    bio: "Brown hood up, gold glasses, gold chain. SLICKRICK once took fifty grand in a single hand and still calls it the best night of a long career at the tables. Spun records up in NorCal, quit the leverage game cold, and holds one of the town's 1 of 1s. Wednesdays at midnight the Re:Aligned come in to get their heads straight. They call SLICKRICK the light in the dark, which is how SLICKRICK sees your cards.",
+    px: { p: "352c1c,362b18,423723,3b301e,473c28,2b2313,2e2414,d8d800,543f2a,000000,001600,001b00,ffff00,a1a100,ffffff,bfbf00,382f1e,57412c,644b32,4a3825,2e2514,292012,38291c,4b3826,413624,32291a,4c422f", d: ".............................................................................0123412..........012123414.........5212121214.......521267787792......0126abbcbb96......526dbbefbb9g......01gdbefhfe96......5268ffiiif9g......0126jiihhi9k.......gl26jiii9k.........gc2mn99k..........lgcgock..........l21pcco...........p12l21q......." } },
+  { token: 4453, name: "WOOF", family: "The Woof Army", turf: "the arcades and diners, doors open at nine",
+    motto: "Old school fun needs a comeback.",
+    bio: "Green skin, cap on backwards, and a habit of getting up after being buried. Every morning at nine WOOF opens the doors for Re:Invigorate and the Woof Army files in for coffee and orders. WOOF runs the arcades and the diners: good food, bad choices, full plates. Put WOOF in the ground and WOOF is back at nine the next morning.",
+    px: { p: "262626,323232,644b00,2a2a2a,4b3800,647d00,3c4b00,4b5e00,000000,506400,003d00", d: "...........................................................011111...........01111111..........011111111.........011112221.........033333333......000422566566.........752589589.........755555aa5..........75555555...........9555aa5...........795555............7577.............75555............755a555...........755a555......." } },
+  { token: 1858, name: "CK", family: "The Nightshade", turf: "the warehouses across the river in South Jersey",
+    motto: "Don't turn into a community member. You'll go broke.",
+    bio: "A bowler hat, a purple face and eyes like stoplights. CK runs the Nightshade out of South Jersey, in the warehouses where the techno goes until sunrise. CK used to deal in pictures and now deals in coins that are gone by morning. Loves the old rubber-hose cartoons, and keeps a real rubber hose for anyone who doesn't. CK's advice to every new face: don't get attached to anybody at this table.",
+    px: { p: "262626,323232,242424,303030,4b3800,644b00,4b004b,960096,ff0000,000000,2e463e,ff00ff,2f463f,3e5d52,2b423a,3f5e54,324b43,3f5e53,2a413a,3c5b50,3a594f,9b0d31,2c433c,294038,ce1141,324a42,2d443c,ffffff", d: "............................................................011111...........01111111..........01111111.........2333333333........0313131313........455678698.........a957b8698.........c967bb69d..........e967769f...........g96699h...........i969jk............l99m.............nloooo...........p96l999...........q96loro......." } },
+];
+// Family Night: six bells on Friday night in Brooklyn (Saturday 01:00 to 07:00 UTC). One boss sits in at every table.
+const FAMILY_NIGHT = { from: 121, to: 127 };
+const isFamilyNight = r => r >= FAMILY_NIGHT.from && r < FAMILY_NIGHT.to;
+const bossNames = () => FAMILIES.map(f => f.name);
+
 function buildPlayer(a, level) {
   const f = B.buildFighter(a, level);
   const r = ROLES[f.style];
@@ -850,6 +903,14 @@ function buildPlayer(a, level) {
     px: 0, w: 0, l: 0, games: 0, ratGames: 0, ratWins: 0, calls: 0, reads: 0, wrongOuts: 0, survived: 0,
     history: [], mem: {}, seated: false, streak: 0, bestStreak: 0,
   });
+  return f;
+}
+
+// a boss: level 150 and near-perfect senses. b = { token, name, type, style, px } (traits from the chain)
+function buildBoss(b) {
+  const fam = FAMILIES.find(f => f.token === b.token) || {};
+  const f = buildPlayer({ id: 'boss' + b.token, name: b.name || fam.name, token: b.token, type: b.type, style: b.style, px: b.px || fam.px || null }, MAX_LEVEL);
+  Object.assign(f, { boss: true, family: fam.family || '', per: Math.max(f.per, .93), pers: Math.max(f.pers, .9), dec: Math.max(f.dec, .96), res: Math.max(f.res, .92), agg: Math.max(f.agg, .55), talk: Math.max(f.talk, 2) });
   return f;
 }
 
@@ -910,6 +971,7 @@ function playTable(fs, R, keep) {
   function speak(p) {
     const others = living().filter(q => q !== p);
     if (!others.length) return;
+    if (p.f.boss) return bossSpeak(p, others);
     if (!p.rat) {
       if (p.probe) {                                             // alien: read someone
         const t = argmax(others, q => p.sus[q.i]);
@@ -954,6 +1016,35 @@ function playTable(fs, R, keep) {
     return listen(p, 'accuse', goat.i, .55);
   }
 
+  // a boss plays it cold. Clean: turns on a bad accuser at once and pushes hard on its read.
+  // The rat: lies low on day one, then frames whoever is closest to the truth with a story nobody can check.
+  function bossSpeak(p, others) {
+    if (!p.rat) {
+      if (p.accusedToday >= 0 && P[p.accusedToday].alive) { const acc = P[p.accusedToday]; p.accusedToday = -1; return listen(p, 'counter', acc.i, .7); }
+      if (p.probe) { const t = argmax(others, q => p.sus[q.i]); const dirty = R() < .75 ? t.rat : !t.rat; p.sus[t.i] += dirty ? 3 : -1.5; p.probe = false; push({ k: 'probe', by: p.i, on: t.i }); return listen(p, dirty ? 'probe' : 'clear', t.i, dirty ? 1.4 : -.6); }
+      const t = argmax(others, q => p.sus[q.i]);
+      if (p.wrap && p.sus[t.i] > .9) { p.wrap = false; P[t.i].silent = true; push({ k: 'wrap', by: p.i, on: t.i, heat: heat() }); return; }
+      if (p.sus[t.i] > .35) return listen(p, p.tip === t.i ? 'tipaccuse' : 'accuse', t.i, p.tip === t.i ? .75 : .65);
+      if (p.tip >= 0 && P[p.tip].alive) { const tp = p.tip; p.tip = -1; return listen(p, 'share', tp, .7); }
+      const clean = argmax(others, q => -p.sus[q.i]);
+      if (p.sus[clean.i] < -.2) return listen(p, 'vouch', clean.i, -.5);
+      return push({ k: 'say', by: p.i, kind: 'hmm', on: -1, noticed: [], heat: heat() });
+    }
+    const inn = others.filter(q => !q.rat); if (!inn.length) return;
+    const h = heat();
+    const threat = argmax(inn, q => q.sus[p.i] * 1.5 + q.f.per * .6 + calls.filter(c => c[0] === q.i && c[1] === p.i).length);
+    if (p.accusedToday >= 0 && P[p.accusedToday].alive) { const acc = P[p.accusedToday]; p.accusedToday = -1; return listen(p, 'tipaccuse', acc.i, .75); }
+    if (p.wrap && threat.sus[p.i] > .5) { p.wrap = false; threat.silent = true; push({ k: 'wrap', by: p.i, on: threat.i, heat: h }); return; }
+    if (day === 1) {          // day one: be everybody's friend
+      const v = argmax(inn, q => -h[q.i] + (q === threat ? .5 : 0));
+      return R() < .7 ? listen(p, 'vouch', v.i, -.5) : push({ k: 'say', by: p.i, kind: 'hmm', on: -1, noticed: [], heat: h });
+    }
+    // after that: whoever is onto it gets framed; if nobody is, pile onto whoever the table already doubts
+    const mark = threat.sus[p.i] > .4 ? threat : argmax(inn, q => h[q.i] + (q === threat ? .4 : 0));
+    if (p.probe) { p.probe = false; push({ k: 'probe', by: p.i, on: mark.i }); return listen(p, 'probe', mark.i, 1.4); }
+    return listen(p, R() < .6 ? 'tipaccuse' : 'accuse', mark.i, .75);
+  }
+
   push({ k: 'deal', n });
   while (!winner && day < MAX_DAYS) {
     day++;
@@ -982,7 +1073,8 @@ function playTable(fs, R, keep) {
     for (const p of shuffle(living(), R)) {
       const others = living().filter(q => q !== p);
       let t;
-      if (p.rat) { const h = heat(); t = argmax(others.filter(q => !q.rat), q => tally[q.i] * .8 + h[q.i]); }
+      if (p.rat) { const h = heat(); t = argmax(others.filter(q => !q.rat), q => tally[q.i] * .8 + h[q.i] + (p.f.boss ? q.sus[p.i] * .6 : 0)); }
+      else if (p.f.boss) t = argmax(others, q => p.sus[q.i] + .15 * tally[q.i]);
       else {
         t = argmax(others, q => p.sus[q.i] + (p.f.style === 'TANK' ? 0 : .25 * tally[q.i]) + (R() - .5) * (.5 + p.f.cha * 2));
         // not sure enough? keep your hand down (wildcards always vote)
@@ -1008,7 +1100,7 @@ function playTable(fs, R, keep) {
     }
     if (living().length <= 3) { winner = 'rat'; break; }
     // night: the rat takes someone out back
-    const victim = argmax(liveInno(), q => q.sus[ratI] + q.f.per * .5 + R() * .3);
+    const victim = argmax(liveInno(), q => q.sus[ratI] + q.f.per * .5 + (P[ratI].f.boss ? calls.filter(c => c[0] === q.i && c[1] === ratI).length : 0) + R() * .3);
     if (!victim) { winner = 'rat'; break; }
     if (victim.back) { victim.back = false; push({ k: 'night', on: victim.i, back: true }); }
     else { victim.alive = false; push({ k: 'night', on: victim.i, back: false }); }
@@ -1070,6 +1162,12 @@ function RatWeek(w, roster, xp, opts = {}) {
   for (const h of this.house) this.F.set(h.id, buildPlayer(h, h.level));
   this.rounds = [];
   this.tapeKeep = opts.tapeKeep ?? TAPE_ROUNDS;
+  // the bosses: kept off the board (never seated), so they never touch the standings or the Gold Booth.
+  // A boss whose real re:gen has been sent in by its holder steps aside for the week.
+  const held = new Set(this.agents.map(a => a.token).filter(Number.isInteger));
+  this.bosses = this.after ? [] : (opts.bosses || []).filter(b => b && FAMILIES.some(f => f.token === b.token) && TYPES[b.type] && ROLES[b.style] && !held.has(b.token))
+    .slice().sort((a, b) => a.token - b.token).map(buildBoss);
+  for (const f of this.bosses) this.F.set(f.id, f);
 }
 RatWeek.prototype.player = function (a) {
   let f = this.F.get(a.id);
@@ -1093,10 +1191,14 @@ RatWeek.prototype.step = function () {
   this.house.forEach((h, i) => { const f = this.F.get(h.id); f.on = i < houseN; if (f.on) f.seated = true; });
   const room = shuffle([...this.F.values()].filter(f => f.seated && f.on), R);
   const sizes = tableSizes(room.length);
-  const out = { r, t: T, tables: [], queue };
+  const out = { r, t: T, tables: [], queue, family: false };
+  // Family Night: a boss sits in at every table, taking turns so every family gets its seats
+  const bosses = isFamilyNight(r) && this.bosses.length ? this.bosses.map((_, k) => this.bosses[(k + r) % this.bosses.length]) : [];
+  if (bosses.length) out.family = true;
   let at = 0;
   sizes.forEach((sz, ti) => {
     const fs = room.slice(at, at + sz); at += sz;
+    if (ti < bosses.length) fs.splice(Math.floor(R() * (fs.length + 1)), 0, bosses[ti]);
     const g = playTable(fs, rng(hash(this.id + ':r' + r + ':t' + ti)), true);
     g.r = r; g.i = ti;
     fs.forEach((f, k) => {
@@ -1119,8 +1221,9 @@ RatWeek.prototype.step = function () {
 RatWeek.prototype.advanceTo = function (n) { while (this.round < Math.min(n, this.N)) this.step(); return this; };
 RatWeek.prototype.rung = function (t) { return t < this.start ? 0 : Math.min(this.N, Math.floor((t - this.start) / ROUND_MS) + 1); };
 RatWeek.prototype.nextBell = function (t) { const r = this.rung(t); return r >= this.N ? null : this.start + r * ROUND_MS; };
+RatWeek.prototype.isFamilyNight = function (r) { return !this.after && isFamilyNight(r) && this.bosses.length > 0; };
 RatWeek.prototype.standings = function () {
-  return [...this.F.values()].filter(f => f.seated).sort((a, b) => (b.px - a.px) || (b.w - a.w) || (a.id < b.id ? -1 : 1));
+  return [...this.F.values()].filter(f => f.seated && !f.boss).sort((a, b) => (b.px - a.px) || (b.w - a.w) || (a.id < b.id ? -1 : 1));
 };
 RatWeek.prototype.boothSize = function () { return Math.max(1, Math.ceil(this.standings().length * .10)); };
 RatWeek.prototype.status = function (f) { if (!f.seated) return f.on ? 'QUEUED' : 'BENCHED'; return f.on ? 'TABLE' : 'BENCHED'; };
@@ -1130,7 +1233,7 @@ RatWeek.prototype.settle = function () {
   return { week: weekId(this.w), xp, booth: s.slice(0, n).map(f => f.id), champ: s[0] ? s[0].id : null, fighters: s.length };
 };
 
-const api = { ROLES, KNACKS, HOUSE_FLOOR, MAX_DAYS, playTable, buildPlayer, tableSizes, RatWeek };
+const api = { ROLES, KNACKS, HOUSE_FLOOR, MAX_DAYS, FAMILIES, FAMILY_NIGHT, isFamilyNight, bossNames, buildBoss, playTable, buildPlayer, tableSizes, RatWeek };
 if (typeof module !== 'undefined') module.exports = api; else root.Rat = api;
 })(this);
 </script>
@@ -1165,8 +1268,9 @@ function makeSeat(p, kind, key) {
     per: f.per, pers: f.pers, dec: f.dec, res: f.res, agg: f.agg, cha: f.cha, talk: f.talk,
     alive: true, probe: f.type === 'alien', wrap: f.type === 'mummy', back: f.type === 'zombie' };
 }
-function createTable({ id, mode, now, seed, host }) {
-  return { v: 1, id, mode, host: host || null, phase: 'lobby', created: now, deadline: null, seats: [], rat: -1, day: 0,
+// boss = { token, name, type, style, px } for a Sit-Down: one family boss sits in with the house regulars
+function createTable({ id, mode, now, seed, host, boss }) {
+  return { v: 1, id, mode, host: host || null, boss: mode === 'sitdown' && boss ? boss : null, phase: 'lobby', created: now, deadline: null, seats: [], rat: -1, day: 0,
     ev: [], seq: 0, votes: {}, said: {}, done: {}, silenced: {}, tip: {}, acc: {}, calls: [], firstCall: -1, nightPick: null,
     winner: null, sus: null, trust: null, bq: [], r: (seed | 0) || 1, lies: 0, updated: now };
 }
@@ -1197,6 +1301,13 @@ function leave(st, pid, now) {
 function start(st, now) {
   if (st.phase !== 'lobby') return;
   if (!humans(st).length) throw fail('Nobody is sitting down yet.');
+  // the Sit-Down: the family boss takes a seat, unless its real re:gen is already at the table
+  const B0 = st.boss;
+  if (B0 && Rt.FAMILIES.some(f => f.token === B0.token) && !st.seats.some(s => s.token === B0.token) && st.seats.length < SEATS) {
+    const f = Rt.buildBoss(B0);
+    st.seats.push(Object.assign(makeSeat({ name: f.name, token: B0.token, px: B0.px || null, type: f.type, style: f.style }, 'bot', 'boss' + B0.token),
+      { boss: true, family: f.family, per: f.per, pers: f.pers, dec: f.dec, res: f.res, agg: f.agg, talk: f.talk }));
+  }
   const used = new Set(st.seats.map(s => s.look)), seen = {};
   let k = 0;
   while (st.seats.length < SEATS) {
@@ -1246,11 +1357,39 @@ function listen(st, A, kind, Tg, now) {
 }
 function argmax(arr, f) { let b = -1, bv = -1e9; for (const x of arr) { const v = f(x); if (v > bv) { bv = v; b = x; } } return b; }
 
+// a boss plays it cold (same play as in the Room): clean, it turns on a bad accuser at once and pushes its read;
+// the rat lies low on day one, then frames whoever is closest to the truth
+function bossSpeak(st, i, now) {
+  const S = st.seats, p = S[i], others = alive(st).filter(q => q !== i), h = heat(st);
+  if (i !== st.rat) {
+    const sus = st.sus[i];
+    if (st.acc[i] != null && S[st.acc[i]].alive) { const ac = st.acc[i]; delete st.acc[i]; return listen(st, i, 'counter', ac, now); }
+    if (p.probe) { const t = argmax(others, q => sus[q]); const dirty = rnd(st) < .75 ? t === st.rat : t !== st.rat; sus[t] += dirty ? 3 : -1.5; p.probe = false; return listen(st, i, dirty ? 'probe' : 'clear', t, now); }
+    const t = argmax(others, q => sus[q]);
+    if (p.wrap && sus[t] > .9) { p.wrap = false; st.silenced[t] = true; return push(st, { k: 'wrap', by: i, on: t, heat: h }, now); }
+    if (sus[t] > .35) return listen(st, i, st.tip[i] === t ? 'tipaccuse' : 'accuse', t, now);
+    if (st.tip[i] != null && S[st.tip[i]].alive) { const tp = st.tip[i]; delete st.tip[i]; return listen(st, i, 'share', tp, now); }
+    const cl = argmax(others, q => -sus[q]);
+    if (sus[cl] < -.2) return listen(st, i, 'vouch', cl, now);
+    return push(st, { k: 'say', by: i, kind: 'hmm', on: -1, noticed: [], heat: h }, now);
+  }
+  const inn = others.filter(q => q !== st.rat); if (!inn.length) return;
+  const onto = q => (S[q].kind === 'bot' ? st.sus[q][i] : 0) * 1.5 + S[q].per * .6 + st.calls.filter(c => c[0] === q && c[1] === i).length;
+  const threat = argmax(inn, onto);
+  if (st.acc[i] != null && S[st.acc[i]].alive) { const ac = st.acc[i]; delete st.acc[i]; return listen(st, i, 'tipaccuse', ac, now); }
+  if (p.wrap && threat >= 0 && onto(threat) > 1) { p.wrap = false; st.silenced[threat] = true; return push(st, { k: 'wrap', by: i, on: threat, heat: h }, now); }
+  if (st.day === 1) return rnd(st) < .7 ? listen(st, i, 'vouch', argmax(inn, q => -h[q] + (q === threat ? .5 : 0)), now) : push(st, { k: 'say', by: i, kind: 'hmm', on: -1, noticed: [], heat: h }, now);
+  const mark = onto(threat) > 1 ? threat : argmax(inn, q => h[q] + (q === threat ? .4 : 0));
+  if (p.probe) { p.probe = false; return listen(st, i, 'probe', mark, now); }
+  return listen(st, i, rnd(st) < .6 ? 'tipaccuse' : 'accuse', mark, now);
+}
+
 function botSpeak(st, i, now) {
   const S = st.seats, p = S[i];
   if (!p.alive || st.silenced[i] || st.phase !== 'talk') return;
   const others = alive(st).filter(q => q !== i);
   if (!others.length) return;
+  if (p.boss) return bossSpeak(st, i, now);
   if (i !== st.rat) {
     const sus = st.sus[i];
     if (p.probe) {
@@ -1315,9 +1454,10 @@ function beginDay(st, now) {
   st.bq.sort((a, b) => a.at - b.at);
 }
 function botVote(st, i, tally) {
-  const others = alive(st).filter(q => q !== i);
-  if (i === st.rat) { const h = heat(st); return argmax(others, q => tally[q] * .8 + h[q]); }
-  const p = st.seats[i], sus = st.sus[i];
+  const others = alive(st).filter(q => q !== i), p = st.seats[i];
+  if (i === st.rat) { const h = heat(st); return argmax(others, q => tally[q] * .8 + h[q] + (p.boss && st.seats[q].kind === 'bot' ? st.sus[q][i] * .6 : 0) + (p.boss ? st.calls.filter(c => c[0] === q && c[1] === i).length * .5 : 0)); }
+  const sus = st.sus[i];
+  if (p.boss) return argmax(others, q => sus[q] + .15 * tally[q]);
   const t = argmax(others, q => sus[q] + (p.style === 'TANK' ? 0 : .25 * tally[q]) + (rnd(st) - .5) * (.5 + p.cha * 2));
   if (sus[t] < .55 - p.cha * .5 && tally[t] < 2) return -1;
   return t;
@@ -1345,7 +1485,8 @@ function resolveVote(st, now) {
   st.phase = 'reveal'; st.deadline = now + T.reveal; st.bq = [];
 }
 function botNightPick(st) {
-  return argmax(aliveClean(st), q => (st.seats[q].kind === 'bot' ? st.sus[q][st.rat] : 0) + st.seats[q].per * .5 + st.calls.filter(c => c[0] === q && c[1] === st.rat).length * .8 + rnd(st) * .3);
+  const k = st.seats[st.rat] && st.seats[st.rat].boss ? 1.6 : .8;    // a boss rat goes after whoever named it
+  return argmax(aliveClean(st), q => (st.seats[q].kind === 'bot' ? st.sus[q][st.rat] : 0) + st.seats[q].per * .5 + st.calls.filter(c => c[0] === q && c[1] === st.rat).length * k + rnd(st) * .3);
 }
 function beginNight(st, now) {
   st.phase = 'night'; st.deadline = now + T.night; st.nightPick = null;
@@ -1460,7 +1601,8 @@ function view(st, seat, since = 0, now = Date.now()) {
     isHost: !!(me && st.host && me.pid === st.host),
     role: st.rat >= 0 && seat >= 0 ? (seat === st.rat ? 'rat' : 'clean') : null,
     rat: over || seat === st.rat ? st.rat : -1, winner: over ? st.winner : null,
-    seats: st.seats.map((s, i) => ({ name: s.name, look: s.look, token: s.token || null, px: s.px, type: s.type, style: s.style, kind: s.kind, alive: s.alive, you: i === seat })),
+    seats: st.seats.map((s, i) => ({ name: s.name, look: s.look, token: s.token || null, px: s.px, type: s.type, style: s.style, kind: s.kind, alive: s.alive, you: i === seat, boss: !!s.boss, family: s.family || null })),
+    boss: st.boss ? { token: st.boss.token, name: st.boss.name } : null,
     ev: st.ev.filter(e => e.seq > since && (e.to == null || e.to === seat)),
     seq: st.seq,
     said: st.said[seat] || 0, maxSay: me ? talkLimit(st, seat) : 0, silenced: !!st.silenced[seat], done: !!st.done[seat],
@@ -1704,6 +1846,29 @@ async function resolveNames() {
 const ownerName = uid => uid === 'local' ? 'you' : uid === S.uid ? 'you' : (S.names[uid] || 'someone');
 
 /* =====================================================================
+   THE FAMILIES — eight bosses. Traits come from the chain (/api/bosses); their art ships with the game.
+   Every viewer needs the same bosses to work out the same week, so settling a week waits until they're loaded.
+   ===================================================================== */
+const MARK_KEY = 'informant-marks';
+const BOSS = { list: [], done: false, byToken: new Map() };
+const famOf = token => Rat.FAMILIES.find(f => f.token === token) || null;
+const marks = () => store.get(MARK_KEY, {});
+async function loadBosses() {
+  let list = [];
+  try {
+    const r = await fetch(API + '/bosses');
+    const j = r.ok ? await r.json() : null;
+    list = j && Array.isArray(j.bosses) ? j.bosses.filter(b => b && famOf(b.token) && B.TYPES[b.type] && Rat.ROLES[b.style]) : [];
+  } catch {}
+  BOSS.list = list.map(b => ({ token: b.token, name: famOf(b.token).name, type: b.type, style: b.style, px: famOf(b.token).px }));
+  BOSS.byToken = new Map(BOSS.list.map(b => [b.token, b]));
+  BOSS.done = true;
+  // the bosses change who sits where, so the table on screen is dealt again
+  recompute(); renderAll(); PB.bout = null; autoPick();
+  if ($('#tab-lore').innerHTML) renderLore();
+}
+
+/* =====================================================================
    SIM MANAGER — every viewer computes the same arena
    ===================================================================== */
 const M = { W: null, Wmain: null, after: false, w: null, bell: 0 };
@@ -1724,7 +1889,7 @@ function ensureSettled(w, r) {
     const id = B.weekId(pw);
     if (allSeasons()[id]) continue;
     if (!r.some(a => B.firstOn(a) < B.weekClose(pw))) continue;
-    const Wp = new Rat.RatWeek(pw, r, careerXp(pw), { tapeKeep: 0 });
+    const Wp = new Rat.RatWeek(pw, r, careerXp(pw), { tapeKeep: 0, bosses: BOSS.list });
     Wp.advanceTo(B.ROUNDS);
     S.computed[id] = Wp.settle();
     writeSeason(id, S.computed[id]);
@@ -1733,14 +1898,14 @@ function ensureSettled(w, r) {
 function recompute() {
   const t = now(), w = B.weekIndex(t), after = t >= B.weekClose(w);
   const r = roster();
-  if (S.seasonsLoaded) ensureSettled(w, r);
+  if (S.seasonsLoaded && (BOSS.done || S.mode !== 'site')) ensureSettled(w, r);
   const xp = careerXp(w);
-  const Wmain = new Rat.RatWeek(w, r, xp), sid = B.weekId(w);
+  const Wmain = new Rat.RatWeek(w, r, xp, { bosses: BOSS.list }), sid = B.weekId(w);
   Wmain.advanceTo(after ? B.ROUNDS : Wmain.rung(t));
   let W = Wmain;
   if (after) {
     const st = Wmain.settle();
-    if (S.seasonsLoaded && !allSeasons()[sid] && Object.keys(st.xp).length) { S.computed[sid] = st; writeSeason(sid, st); }
+    if (S.seasonsLoaded && (BOSS.done || S.mode !== 'site') && !allSeasons()[sid] && Object.keys(st.xp).length) { S.computed[sid] = st; writeSeason(sid, st); }
     const xp2 = { ...xp }; for (const [k, v] of Object.entries(st.xp)) xp2[k] = (xp2[k] || 0) + v;
     W = new Rat.RatWeek(w, r, xp2, { after: true });
     W.advanceTo(W.rung(t));
@@ -1881,6 +2046,7 @@ function apply(e) {
   switch (e.k) {
     case 'deal':
       say(`${PB.W.after ? 'Exhibition' : 'Bell ' + (gm.r + 1)}. ${e.n} at the table. One of them is a rat. <span class="muted">Tap a face to call your hunch.</span>`, 'sys');
+      { const bi = PB.F.findIndex(f => f && f.boss); if (bi >= 0) say(`Family Night. <b class="gold">${esc(PB.F[bi].name)}</b> of ${esc(PB.F[bi].family)} is sitting in.`, 'big', bi); }
       return DUR.deal;
     case 'day':
       PB.alive = e.alive.slice(); PB.vote = null; PB.night = null;
@@ -2054,7 +2220,7 @@ function draw(t) {
     const mine = isMine(f.id);
     g.fillStyle = mine ? PAL.gold : PAL.ink; g.fillRect(p.x - w / 2 - 1, y - 1, w + 2, 10);
     g.fillStyle = PB.alive[k] ? PAL.ink2 : PAL.ink; g.fillRect(p.x - w / 2, y, w, 8);
-    drawText(g, nmx, Math.round(p.x - textW(nmx) / 2), y + 1, PB.reveal[k] === 'rat' ? PAL.red : PB.alive[k] ? PAL.paper : '#556');
+    drawText(g, nmx, Math.round(p.x - textW(nmx) / 2), y + 1, PB.reveal[k] === 'rat' ? PAL.red : PB.alive[k] ? (f.boss ? PAL.gold : PAL.paper) : '#556');
     if (PB.alive[k]) { const hw = Math.round(Math.min(1, Math.max(0, PB.heat[k] || 0) / 2.5) * w); g.fillStyle = PAL.ember; g.fillRect(p.x - w / 2, y + 7, hw, 1); }
 
   }
@@ -2133,7 +2299,7 @@ function renderChip() {
   if (!M.W) { setHTML(el, 're:loading'); return; }
   const t = now();
   if (M.after) { chip.classList.add('off'); el.textContent = 'AFTER HOURS · OPENS ' + fmtTime(B.weekOpen(M.w + 1)).toUpperCase(); }
-  else { chip.classList.remove('off'); el.textContent = `LIVE · BELL ${M.W.round}/${B.ROUNDS}`; }
+  else { chip.classList.remove('off'); const fam = M.W.round > 0 && M.W.rounds[M.W.round - 1] && M.W.rounds[M.W.round - 1].family; el.textContent = `${fam ? 'FAMILY NIGHT' : 'LIVE'} · BELL ${M.W.round}/${B.ROUNDS}`; chip.classList.toggle('fam', !!fam); }
   const nb = M.W.nextBell(t);
   $('#floorSub').textContent = nb ? 'next deal in ' + fmtLeft(nb - t) : '';
 }
@@ -2141,7 +2307,7 @@ function renderWatchList() {
   const W = M.W; if (!W) return;
   const tapes = W.rounds.slice(-B.TAPE_ROUNDS).reverse();
   if (bellView === null || !tapes.some(r => r.r === bellView)) bellView = tapes[0] ? tapes[0].r : null;
-  $('#floorTitle').textContent = W.after ? 'After hours' : 'Tonight\'s tables';
+  $('#floorTitle').textContent = W.after ? 'After hours' : W.rounds[bellView] && W.rounds[bellView].family ? 'Family Night' : 'Tonight\'s tables';
   $('#bellTabs').innerHTML = tapes.map((r, k) => `<button class="mono ${r.r === bellView ? 'on' : ''}" data-bell="${r.r}">${W.after ? 'EXHIB ' + (r.r + 1) : 'BELL ' + (r.r + 1)}${k === 0 ? ' · LIVE' : ''}</button>`).join('');
   const r = W.rounds[bellView];
   if (!r) { $('#bouts').innerHTML = `<div class="note">The first bell hasn't rung yet.</div>`; return; }
@@ -2294,7 +2460,8 @@ function openSheet(id) {
       ${dossierImg(f, 3)}
       <div style="min-width:0">
         <div class="nm" style="font-size:24px">${esc(f.name)}</div>
-        <div class="sub">${f.token ? 're:gen #' + f.token + ' · ' : ''}${role.label} · ${B.TYPE_LABEL[f.type]}</div>
+        <div class="sub">${f.boss ? '<b class="gold">BOSS</b> · ' + esc(f.family) + ' · ' : ''}${f.token ? 're:gen #' + f.token + ' · ' : ''}${role.label} · ${B.TYPE_LABEL[f.type]}</div>
+        ${f.boss && famOf(f.token) ? `<div class="sub" style="margin-top:4px;text-transform:none">"${esc(famOf(f.token).motto)}" Never on the board.</div>` : ''}
         <div class="sub" style="margin-top:4px">${f.house ? 'A house regular.' : 'Sent in by ' + esc(ownerName(f.owner))}</div>
       </div>
       <button class="btn ghost small" id="sheetClose" aria-label="Close">✕</button>
@@ -2357,7 +2524,7 @@ function applyRoster(j) {
 }
 let pollT = 0;
 async function startSite(first) {
-  S.mode = 'site'; applyRoster(first);
+  S.mode = 'site'; applyRoster(first); loadBosses();
   S.uid = W8.session ? W8.session.address : null; S.canWrite = !!W8.session;
   if (W8.session) refreshOwned();
   clearInterval(pollT);
@@ -2693,8 +2860,19 @@ function renderLore() {
     <li>Doors open Monday at midnight UTC (${fmtTime(open)} your time). The last bell rings Saturday night in Brooklyn (${fmtTime(close)} your time).</li>
     <li>A new deal every hour, ${B.ROUNDS} a week. Nobody steers. You send a re:gen in, and it makes every call.</li>
     <li>Catching the rat pays 10 PX if you're still at the table, 5 if you're not, +4 for the deciding vote and +5 for calling it first. A rat that gets away takes 25 PX, plus 3 for every clean re:gen gone, voted out or taken out back. A rat that gets caught takes 1 PX, and a clean re:gen at a table the rat beat takes 2.</li>
+    <li><b>Family Night.</b> Friday night in Brooklyn (${fmtTime(B.weekOpen(B.weekIndex(now())) + Rat.FAMILY_NIGHT.from * B.ROUND_MS)} your time), for ${Rat.FAMILY_NIGHT.to - Rat.FAMILY_NIGHT.from} bells, a family boss sits in at every table. See <i>The families</i>.</li>
     <li>When the last bell rings, the top 10% by PX sit in the <b class="gold">Gold Booth</b>. Saturday night to Monday is after hours: exhibition deals that don't count.</li>
   </ul>
+  <h3>The families</h3>
+  <p>Eight families run the rackets around DeStefano's, and all eight answer to <b class="gold">JED</b>, who owns the place and sits at the head of the table. MECH drew every face in town. The bosses don't come in often, and when they do, the room goes quiet.</p>
+  <ul>
+    <li><b>Family Night.</b> Friday night in Brooklyn, for ${Rat.FAMILY_NIGHT.to - Rat.FAMILY_NIGHT.from} bells, a boss sits in at every table, taking turns so every family gets its seats. Bosses play by the same rules, and any of them can be the rat. They never go on the board and never take a seat in the Gold Booth.</li>
+    <li><b>The Sit-Down.</b> On the PLAY tab, pick a family and sit down with its boss and five house regulars. Win the game, as the rat or as a clean re:gen, and the family's mark goes on your record. Collect all ${Rat.FAMILIES.length}.</li>
+    <li><b>Why they're hard.</b> A boss sits at level ${B.MAX_LEVEL} with near-perfect senses: it catches tells, lies smoothly and won't be talked out of a read. Clean, it turns on a bad accuser at once. As the rat, it plays friendly on day one, then frames whoever is closest to the truth, and takes them out back at night.</li>
+    <li><b>Names.</b> A boss's name belongs to its family. Nobody else can sit down under it. If the holder of a boss's re:gen sends it in or sits down with it, the family's stand-in steps aside and the real one plays, as an ordinary re:gen.</li>
+  </ul>
+  <div class="fams">${Rat.FAMILIES.map(fam => {
+    return `<div class="fam">${img({ token: fam.token, px: fam.px }, 54, 3)}<div><div class="nm">${esc(fam.name)} <span class="mono muted">#${fam.token}</span></div><div class="sub gold">${esc(fam.family)} · ${esc(fam.turf)}</div><p><i>"${esc(fam.motto)}"</i></p><p class="muted">${esc(fam.bio)}</p></div></div>`; }).join('')}</div>
   <h3>The re:CALL</h3>
   <p>Every re:gen remembers who lied to it and who called the rat right. It carries that from table to table all week, and it trusts and doubts accordingly. Sometimes that memory is the tell. Sometimes it's a grudge that sends the wrong re:gen out back.</p>
   <h3>Who they are</h3>
@@ -2724,8 +2902,10 @@ const pnow = () => Date.now();
 const liveCv = $('#liveStage'), lg = liveCv.getContext('2d');
 
 /* ---------- who you sit down as ---------- */
+const reservedFor = name => { const f = Rat.FAMILIES.find(x => x.name === name); return f && pick.token !== f.token ? f : null; };
 function pickPlayer() {
-  const name = cleanName(pick.name);
+  let name = cleanName(pick.name);
+  if (reservedFor(name)) name = '';
   if (pick.token && pick.px) return { pid, name: name || '#' + pick.token, token: pick.token, px: pick.px, type: pick.type, style: pick.style };
   return { pid, name: name || B.LOOKS[pick.look].name, look: pick.look };
 }
@@ -2748,17 +2928,18 @@ async function playApi(body, auth) {
 }
 function resetTable() {
   clearInterval(PL.pollT);
-  Object.assign(PL, { where: null, mode: null, st: null, k: null, id: null, view: null, since: 0, log: [], notes: [], reveal: {}, talk: null, voteAnim: null, sel: -1, busy: false });
+  Object.assign(PL, { where: null, mode: PL.mode === 'sitdown' ? 'sitdown' : null, st: null, k: null, id: null, view: null, since: 0, log: [], notes: [], reveal: {}, talk: null, voteAnim: null, sel: -1, busy: false });
   $('#playLog').innerHTML = '';
 }
 async function startMode(mode) {
   store.set(PICK_KEY, pick);
   resetTable();
   PL.mode = mode;
-  if (mode === 'solo') {
-    const now = pnow();
+  if (mode === 'solo' || mode === 'sitdown') {
+    const now = pnow(), boss = mode === 'sitdown' ? BOSS.byToken.get(PL.boss) : null;
+    if (mode === 'sitdown' && !boss) { toast('The families only sit down on the live site.'); PL.mode = null; return renderPlay(); }
     PL.where = 'local';
-    PL.st = Live.createTable({ id: 'SOLO', mode: 'solo', now, seed: (Math.random() * 2 ** 31) | 0, host: pid });
+    PL.st = Live.createTable({ id: mode === 'sitdown' ? 'SITDOWN' : 'SOLO', mode, now, seed: (Math.random() * 2 ** 31) | 0, host: pid, boss });
     Live.join(PL.st, pickPlayer(), now);
     Live.act(PL.st, 0, { type: 'start' }, now);
     ingest(Live.view(PL.st, 0, 0, now));
@@ -2817,7 +2998,7 @@ function ingest(v) {
       case 'join': addLog(`${liveB(e.by)} sits down.`, 'sys', e.by); break;
       case 'left': addLog('Someone got up and left.', 'sys'); break;
       case 'autopilot': addLog(`${liveB(e.by)}'s player left. Its re:gen plays on by itself.`, 'sys', e.by); break;
-      case 'deal': addLog(`The cards go around. ${e.n} at the table. One of them is a rat.`, 'sys'); break;
+      case 'deal': addLog(`The cards go around. ${e.n} at the table. One of them is a rat.`, 'sys'); if (v.boss) { const bi = v.seats.findIndex(s => s.boss); if (bi >= 0) addLog(`<b class="gold">${esc(v.seats[bi].name)}</b> of ${esc(v.seats[bi].family)} takes a seat. It could be the rat. So could you.`, 'big', bi); else addLog(`You're the boss at this table. Your own crew sits in.`, 'sys'); } break;
       case 'role': addLog(e.rat ? `<b class="red">You're the rat.</b> Steer them wrong. At night you pick who goes out back.` : `<b>You're clean.</b> Find the rat before it thins the table.`, 'big', v.you); break;
       case 'day': addLog(e.d === 1 ? 'Day one. Nobody trusts anybody yet.' : `Day ${e.d}. ${e.alive.filter(Boolean).length} left at the table.`, 'sys'); PL.sel = -1; break;
       case 'tip': PL.notes.push(`Day ${v.day}: a tip says ${liveName(e.on)} was by the back door. Tips can be wrong.`); addLog(`<i>You got a tip: somebody saw ${liveB(e.on)} by the back door.</i>`, 'tip', v.you); break;
@@ -2861,6 +3042,12 @@ function ingest(v) {
           if (youRat) { if (won) r.ratW++; else r.ratL++; }
           if (e.firstCall === v.you) r.called++;
           store.set(REC_KEY, r);
+          // a Sit-Down won: the family's mark goes on your record
+          if (v.mode === 'sitdown' && v.boss && won) {
+            const mk = marks(), fam = famOf(v.boss.token), first = !mk[v.boss.token];
+            mk[v.boss.token] = Date.now(); store.set(MARK_KEY, mk);
+            if (fam) addLog(first ? `<b class="gold">${esc(fam.family)}'s mark is yours.</b> ${esc(fam.name)} won't forget this.` : `You beat ${esc(fam.name)} again. ${esc(fam.family)} noticed.`, 'big', v.you);
+          }
         }
         break;
       }
@@ -2964,7 +3151,17 @@ function renderPlayMenu() {
     <div class="card"><div class="nm" style="font-size:18px">Friends</div><div class="muted" style="margin-bottom:8px">${site ? 'Make a private table and send the code. Bots fill whatever seats are left.' : 'Works on your live site.'}</div>
       <div style="display:flex;gap:8px"><button class="btn" data-mode="friends" ${site ? '' : 'disabled'} style="flex:1">MAKE A TABLE</button></div>
       <div class="sharebox" style="margin-top:8px"><input id="joinCode" maxlength="8" placeholder="Got a code?" value="${esc(PL.code)}" ${site ? '' : 'disabled'} style="text-transform:uppercase"><button class="btn ghost small" data-joincode ${site ? '' : 'disabled'}>JOIN</button></div></div>
+    ${sitdownCard()}
     <p class="muted" style="font-size:14px;margin:10px 2px">Games you play here have their own record, separate from the weekly board. Your record lives on this device.</p>`);
+}
+function sitdownCard() {
+  const mk = marks(), got = Rat.FAMILIES.filter(f => mk[f.token]).length;
+  const body = BOSS.list.length
+    ? `<div class="bossgrid">${Rat.FAMILIES.map(fam => { const b = BOSS.byToken.get(fam.token); if (!b) return ''; const mine = pick.token === fam.token;
+        return `<button class="boss ${mk[fam.token] ? 'won' : ''}" data-sitdown="${fam.token}" aria-label="Sit down with ${esc(fam.name)} of ${esc(fam.family)}">${img(b, 40)}<span><span class="nm">${esc(fam.name)}</span><span class="sub">${esc(fam.family)}</span></span>${mine ? '<span class="tag">YOURS</span>' : mk[fam.token] ? '<span class="tag gold">MARKED</span>' : ''}</button>`; }).join('')}</div>`
+    : `<div class="note">${S.mode === 'site' && !BOSS.done ? 'The families are on their way in…' : 'The families only sit down on the live site.'}</div>`;
+  return `<div class="card sitdown"><div class="h2" style="margin:0 0 4px"><div class="nm" style="font-size:18px">The Sit-Down</div><span class="mono muted">${got} of ${Rat.FAMILIES.length} marks</span></div>
+    <div class="muted" style="margin-bottom:10px">Sit down with a family boss and five house regulars. Bosses read tells, lie smooth and never forget who named them. Win the game to earn the family's mark.</div>${body}</div>`;
 }
 // clicks
 $('#tab-play').addEventListener('click', e => {
@@ -2972,6 +3169,8 @@ $('#tab-play').addEventListener('click', e => {
   if (t.closest('[data-pickopen]')) { if ($('#playName')) pick.name = $('#playName').value; PL.menuOpen = !PL.menuOpen; store.set(PICK_KEY, pick); return renderPlayMenu(); }
   const ch = t.closest('[data-choice]');
   if (ch) { const c = pickChoices()[+ch.dataset.choice]; const name = $('#playName') ? $('#playName').value : pick.name; pick = c.token ? { token: c.token, px: c.px, type: c.type, style: c.style, name } : { look: c.look, name }; store.set(PICK_KEY, pick); return renderPlayMenu(); }
+  const sd = t.closest('[data-sitdown]');
+  if (sd) { if ($('#playName')) pick.name = $('#playName').value; PL.boss = +sd.dataset.sitdown; return startMode('sitdown'); }
   const md = t.closest('[data-mode]');
   if (md) { if ($('#playName')) pick.name = $('#playName').value; PL.code = md.dataset.mode === 'friends' ? '' : PL.code; return startMode(md.dataset.mode); }
   if (t.closest('[data-joincode]')) { PL.code = ($('#joinCode').value || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); if (!PL.code) return toast('Type the code first.'); if ($('#playName')) pick.name = $('#playName').value; return startMode('friends'); }
@@ -3004,7 +3203,10 @@ liveCv.addEventListener('click', e => {
   for (let k = 0; k < n; k++) { const p = seatPos(k, n); const d = Math.abs(p.x - x) + (y < p.base - 42 || y > 130 ? 99 : 0); if (d < 16 && d < best) { best = d; hit = k; } }
   if (hit >= 0) seatTap(hit);
 });
-$('#tab-play').addEventListener('change', e => { if (e.target.id === 'playName') { pick.name = e.target.value; store.set(PICK_KEY, pick); } });
+$('#tab-play').addEventListener('change', e => { if (e.target.id === 'playName') {
+  const f = reservedFor(cleanName(e.target.value));
+  if (f) { toast(`${f.name} runs ${f.family}. That name is taken.`); e.target.value = ''; }
+  pick.name = e.target.value; store.set(PICK_KEY, pick); } });
 
 /* ---------- drawing the live table ---------- */
 function drawLive(t) {
@@ -3044,7 +3246,7 @@ function drawLive(t) {
     const w = Math.max(textW(label) + 4, 14);
     c.fillStyle = s.you ? PAL.gold : k === PL.sel ? PAL.paper : PAL.ink; c.fillRect(p.x - w / 2 - 1, y - 1, w + 2, 10);
     c.fillStyle = s.alive ? PAL.ink2 : PAL.ink; c.fillRect(p.x - w / 2, y, w, 8);
-    drawText(c, label, Math.round(p.x - textW(label) / 2), y + 1, PL.reveal[k] === 'rat' ? PAL.red : s.alive ? PAL.paper : '#556');
+    drawText(c, label, Math.round(p.x - textW(label) / 2), y + 1, PL.reveal[k] === 'rat' ? PAL.red : s.alive ? (s.boss ? PAL.gold : PAL.paper) : '#556');
     if (s.alive && heatNow[k] != null) { const hw = Math.round(Math.min(1, Math.max(0, heatNow[k]) / 2.5) * w); c.fillStyle = PAL.ember; c.fillRect(p.x - w / 2, y + 7, hw, 1); }
     if (k === PL.sel && s.alive) { c.fillStyle = PAL.gold; c.fillRect(p.x - 3, p.base - 40, 7, 2); }
   }
@@ -3081,7 +3283,7 @@ function drawLive(t) {
   }
   if (v.phase === 'lobby') { c.fillStyle = 'rgba(13,24,20,.8)'; c.fillRect(64, 24, 112, 20); textC(c, 'WAITING FOR PLAYERS', SW / 2, 27, PAL.gold, 1, null); textC(c, v.seats.length + ' OF ' + Live.SEATS + ' SEATS', SW / 2, 36, PAL.paper, 1, null); }
   c.fillStyle = 'rgba(13,24,20,.85)'; c.fillRect(0, 0, 70, 9);
-  drawText(c, (PL.mode || '').toUpperCase() + (v.day ? ' DAY ' + v.day : ''), 2, 2, PAL.gold);
+  drawText(c, (PL.mode === 'sitdown' ? 'SIT-DOWN' : (PL.mode || '').toUpperCase()) + (v.day ? ' DAY ' + v.day : ''), 2, 2, PAL.gold);
 }
 let clockT = 0;
 function playFrame(t, dt) {
